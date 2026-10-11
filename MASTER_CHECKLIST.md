@@ -22,6 +22,13 @@
 
 > **Note:** “In prototype” means the feature exists in a basic form, not that it is finished, balanced, or confirmed bug-free.
 
+## 🧍 New character milestone
+
+- [x] Freddy is now represented by a fully rotatable procedural 3D player avatar with light-brown layered hair, blue eyes, red hood/collar, navy uniform and red high-top shoes.
+- [x] Keep player collision, combat, camera, animation and training dummy behavior in the existing game.
+- [ ] Test the new character on an actual iPhone 13; adjust style, scale, hair or clothing after screenshots.
+- [ ] Replace procedural avatar with a proper textured/rigged GLB when available.
+
 ## 🎯 Next sprint — make the fighting feel good
 
 - [x] Implement full-body third-person camera framing player and opponent (needs iPhone playtest)
@@ -35,10 +42,11 @@
 
 ## 🧍 Characters and animation
 
-- [ ] Decide our first playable fighter and character design
-- [ ] Create/reference a game-ready model in Tripo or Meshy
+- [x] Choose Freddy as the playable fighter; four-view anime character reference sheet supplied
+- [x] Build a temporary playable 3D Freddy-style avatar in Three.js (v0.3.2)
+- [ ] Generate the finished game-ready 3D Freddy mesh in Tripo or Meshy using the supplied front/back/side artwork
 - [ ] Check polycount, model scale, textures and licence
-- [ ] Export and import an animated GLB into Three.js
+- [ ] Export the finished Freddy model as an animated/rigged GLB and import it into Three.js (image sheet is not a GLB)
 - [ ] Proper idle, walk, run, jump, dash, block and attack animations
 - [ ] Blend animation states without snapping or sliding
 - [ ] Add an opponent character and/or training dummy animations
@@ -111,3 +119,6 @@
 
 ---
 **How we work:** Update this checklist as decisions are made. Keep game changes in `index.html`; Scriptable uses the GitHub auto-updater. No new launcher download is required for normal game updates.
+
+### Character reference note (v0.3.2)
+The original uploaded image is a **2D orthographic-style character turnaround** rather than a 3D model. It has not been uploaded as a public GitHub image. The current in-game Freddy player is a stylised procedural approximation, not an exact reproduction of Freddy's face. Once a game-ready GLB is supplied, we will replace this geometry and attach the real animation clips.
