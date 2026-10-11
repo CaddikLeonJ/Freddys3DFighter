@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#101025">
+<title>Freddy's 3D Anime Fighting Game — Combat Lab v0.2.1</title>
+<style>
+:root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;width:100%;overflow:hidden;background:#14172a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;touch-action:none}
+#screen{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,transparent 40%,rgba(9,7,26,.39) 100%)}
+#hud{position:fixed;z-index:3;top:0;left:0;right:0;pointer-events:none;padding:calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 12px) 8px calc(env(safe-area-inset-left) + 12px);background:linear-gradient(180deg,rgba(5,8,23,.88),rgba(5,8,23,.25) 78%,transparent)}
+#hudRow{display:flex;align-items:flex-start;gap:10px}
+.hudTeam{flex:1;min-width:0;max-width:310px}.hudTeam.right{text-align:right}.hudName{font-size:10px;letter-spacing:.10em;font-weight:950;margin-bottom:4px;text-shadow:0 1px 5px #000}
+.bar{height:11px;position:relative;border:1px solid #b4b7e278;border-radius:9px;background:#110e22cc;overflow:hidden;box-shadow:inset 0 0 5px #070719}
+.bar span{display:block;height:100%;border-radius:9px;transition:width .14s linear}.hp{background:linear-gradient(90deg,#ff3f7e,#ff9b9f)}.enemyhp{background:linear-gradient(90deg,#ad58e9,#f287e6)}.ce{background:linear-gradient(90deg,#27c5d9,#75fff0)}
+.hudLabel{font-size:8px;opacity:.8;letter-spacing:.10em;margin:3px 0}.cebar{height:7px}
+#centerTitle{text-align:center;flex:0 0 auto;font-size:12px;font-weight:1000;letter-spacing:.16em;color:#f7f4ff;text-shadow:0 0 9px #9463ff88,0 2px 6px #000;margin-top:4px}
+#centerTitle small{display:block;color:#a9abda;font-size:8px;letter-spacing:.2em;margin-top:4px}
+#debug{position:fixed;z-index:3;top:calc(env(safe-area-inset-top) + 70px);left:calc(env(safe-area-inset-left) + 12px);color:#d1e7ff;font-weight:700;font-size:10px;letter-spacing:.02em;text-shadow:0 1px 4px #000;pointer-events:none;line-height:1.5}
+#debug[hidden]{display:none}
+#topButtons{position:fixed;z-index:4;top:calc(env(safe-area-inset-top) + 78px);right:calc(env(safe-area-inset-right) + 13px);display:flex;gap:6px}
+.tool{border:1px solid #ffffff66;border-radius:8px;background:#14152bc9;backdrop-filter:blur(9px);padding:7px 9px;font-weight:900;font-size:10px;box-shadow:0 3px 10px #0004}
+#combo{position:fixed;z-index:4;left:50%;top:27%;transform:translate(-50%,-50%);pointer-events:none;text-align:center;font-size:17px;font-weight:1000;color:#fff0b2;letter-spacing:.04em;text-shadow:0 0 18px #ff765e,0 3px 4px #000;opacity:0;transition:opacity .17s}
+#toast{position:fixed;z-index:4;left:50%;top:calc(env(safe-area-inset-top) + 86px);transform:translateX(-50%);pointer-events:none;font-size:11px;letter-spacing:.07em;font-weight:900;background:#151531ba;border:1px solid #71689d88;border-radius:20px;padding:7px 13px;white-space:nowrap;opacity:0;transition:opacity .25s}
+#bottom{position:fixed;z-index:5;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;padding:0 calc(env(safe-area-inset-right) + 14px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 14px)}
+#stick{pointer-events:auto;position:relative;width:117px;height:117px;border:2px solid #8edfe288;border-radius:50%;background:radial-gradient(circle,#0b516866,#060c2555 75%);box-shadow:0 3px 22px #16b7c538;touch-action:none;flex:0 0 auto}
+#stick:after{content:'MOVE';position:absolute;top:-19px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:.15em;font-weight:950;text-shadow:0 2px 4px black}
+#nub{position:absolute;left:50%;top:50%;margin-left:-26px;margin-top:-26px;width:52px;height:52px;border-radius:50%;border:2px solid #b9fff8;background:#56e1ed88;box-shadow:0 0 12px #18bce35e;pointer-events:none}
+#actions{pointer-events:auto;display:grid;grid-template-columns:repeat(3,62px);grid-template-rows:repeat(2,57px);gap:7px;align-items:center}
+.act{width:62px;height:57px;border-radius:18px;border:1.5px solid #ffffff86;background:linear-gradient(145deg,#333e69ee,#1a1a38ee);font-size:10px;font-weight:1000;letter-spacing:.03em;text-shadow:0 1px 4px #0009;box-shadow:0 3px 12px #0007;touch-action:none}
+.act:active,.act.held{transform:scale(.94);filter:brightness(1.45)}
+#punch{background:linear-gradient(145deg,#498bf6,#253884)}#kick{background:linear-gradient(145deg,#ff8b64,#9e314a)}#blast{background:linear-gradient(145deg,#9d6dff,#552d9e)}#dash{background:linear-gradient(145deg,#38acae,#16586c)}#block{background:linear-gradient(145deg,#6772a5,#34385e)}#jump{background:linear-gradient(145deg,#838cae,#41486c)}
+#message{position:fixed;z-index:20;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;background:linear-gradient(140deg,#0e132b,#26123a);text-align:center}
+#message .inner{border:1px solid #aaa1e159;background:#ffffff0c;box-shadow:0 14px 45px #0008;border-radius:16px;max-width:430px;padding:20px 25px}
+#message h2{font-size:20px;margin:0 0 9px}#message p{font-size:12px;line-height:1.5;margin:8px 0;color:#d7d7e9}#details{font-size:11px;color:#b0f9ff;word-break:break-word;margin-top:12px}
+#landscapeHint{display:none}
+@media(max-height:400px){#stick{width:105px;height:105px}#actions{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,52px);gap:6px}.act{width:56px;height:52px;font-size:9px}#topButtons{top:calc(env(safe-area-inset-top) + 67px)}#debug{top:calc(env(safe-area-inset-top) + 62px)}#bottom{padding-bottom:calc(env(safe-area-inset-bottom) + 7px)}}
+@media(orientation:portrait){#centerTitle{font-size:10px;letter-spacing:.07em}#hudRow{gap:5px}.hudName{font-size:9px}#stick{width:108px;height:108px}#actions{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:5px}.act{width:56px;height:56px;font-size:9px}#bottom{padding-left:8px;padding-right:8px}#debug{top:calc(env(safe-area-inset-top) + 84px)}#topButtons{top:calc(env(safe-area-inset-top) + 95px)}#landscapeHint{display:block;position:fixed;z-index:2;bottom:calc(env(safe-area-inset-bottom) + 151px);left:50%;transform:translateX(-50%);font-size:10px;background:#14152988;border-radius:10px;padding:5px 9px;pointer-events:none;white-space:nowrap}}
+/* Portrait is not a supported playing orientation; display a clear rotation gate. */
+#portraitLock{display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:linear-gradient(140deg,#090f20,#241438);padding:calc(env(safe-area-inset-top) + 25px) 22px calc(env(safe-area-inset-bottom) + 25px);text-align:center}
+#portraitLock .lockCard{max-width:340px;border:1px solid #8c83cb77;border-radius:22px;background:#ffffff0b;padding:30px 22px;box-shadow:0 15px 60px #0007}
+#portraitLock .rotateIcon{font-size:64px;line-height:1.1;margin-bottom:16px}
+#portraitLock h2{font-size:23px;letter-spacing:.025em;margin:0 0 12px}
+#portraitLock p{font-size:14px;line-height:1.5;color:#d3d7ee;margin:0}
+#portraitLock p+p{margin-top:10px;color:#adb5d6;font-size:12px}
+#landscapeHint{display:none!important}
+@media(orientation:portrait){#portraitLock{display:flex}}
+</style>
+</head>
+<body>
+<div id="portraitLock" role="dialog" aria-label="Rotate your device to landscape">
+ <div class="lockCard"><div class="rotateIcon">↻</div>
+ <h2>LANDSCAPE ONLY</h2>
+ <p>Turn your iPhone sideways to enter the combat arena.</p>
+ <p>If the screen doesn't rotate, turn off Portrait Orientation Lock in Control Centre.</p>
+ </div>
+</div>
+<canvas id="screen" aria-label="Anime style 3D fighting training arena"></canvas>
+<div id="vignette"></div>
+<div id="hud"><div id="hudRow">
+  <div class="hudTeam"><div class="hudName">PLAYER · TRAINING FIGHTER</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
+  <div id="centerTitle">COMBAT LAB<small>FREDDY'S 3D FIGHTER · v0.2.1</small></div>
+  <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel">STATIC TARGET · NO AI YET</div></div>
+</div></div>
+<div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span></div>
+<div id="topButtons"><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button></div>
+<div id="combo"></div><div id="toast"></div><div id="landscapeHint">Best in landscape ↻</div>
+<div id="bottom"><div id="stick"><div id="nub"></div></div><div id="actions">
+  <button class="act" id="block">BLOCK</button><button class="act" id="blast">ENERGY</button><button class="act" id="jump">JUMP</button>
+  <button class="act" id="punch">PUNCH</button><button class="act" id="kick">KICK</button><button class="act" id="dash">DASH</button>
+</div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Combat Lab v0.2.1</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<script type="module">
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.2.1
+// Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const msg=$('message');
+const fail=(error)=>{
+ msg.style.display='flex';msg.querySelector('h2').textContent='Combat Lab could not start';
+ msg.querySelector('p').textContent='Check your connection. Three.js loads online. Safari/GitHub Pages is a fallback if Scriptable blocks it.';
+ $('details').textContent=String(error?.message||error);$('state').textContent='ERROR';
+};
+window.addEventListener('error',e=>fail(e.message||'Browser error'));
+window.addEventListener('unhandledrejection',e=>fail(e.reason||'Load error'));
+async function loadThree(){
+ let last;
+ for(const u of ['https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js','https://unpkg.com/three@0.160.1/build/three.module.js']){
+  try{$('details').textContent='Downloading engine: '+new URL(u).hostname;return await import(u)}catch(e){last=e;}
+ }
+ throw last||new Error('Three.js could not be downloaded');
+}
+(async()=>{try{
+const T=await loadThree();
+const renderer=new T.WebGLRenderer({canvas:$('screen'),antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputColorSpace=T.SRGBColorSpace;
+renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.45;
+const scene=new T.Scene();scene.background=new T.Color(0x13162b);scene.fog=new T.FogExp2(0x17152d,.014);
+const camera=new T.PerspectiveCamera(63,1,.1,100);
+scene.add(new T.HemisphereLight(0x9ecbff,0x242036,1.55));
+const keyLight=new T.DirectionalLight(0xb6d6ff,2.4);keyLight.position.set(-8,18,9);scene.add(keyLight);
+const rim=new T.PointLight(0xa35cff,17,22);rim.position.set(4,5,-9);scene.add(rim);
+const cyanLight=new T.PointLight(0x1be9d6,9,19);cyanLight.position.set(-6,4,0);scene.add(cyanLight);
+const mat=(c,rough=.82,metal=0)=>new T.MeshStandardMaterial({color:c,roughness:rough,metalness:metal});
+const glow=(c,opacity=1)=>new T.MeshBasicMaterial({color:c,transparent:opacity<1,opacity,depthWrite:opacity===1});
+const floorMat=mat(0x303047,.84),edgeMat=mat(0x13132a),pillarMat=mat(0x3b395c),ink=mat(0x171829),skin=mat(0xffc9a8),hair=mat(0x182041),uniform=mat(0x3641a0),armor=mat(0x151a3c),fist=mat(0x5dc9dc,.54),dummyM=mat(0x936abf),dummyDark=mat(0x423d63);
+function mesh(g,m,x,y,z,parent=scene){const o=new T.Mesh(g,m);o.position.set(x,y,z);parent.add(o);return o;}
+const floor=mesh(new T.PlaneGeometry(36,36),floorMat,0,0,0);floor.rotation.x=-Math.PI/2;
+const grid=new T.GridHelper(36,36,0x615b90,0x454269);grid.position.y=.012;grid.material.transparent=true;grid.material.opacity=.42;scene.add(grid);
+const platform=mesh(new T.CylinderGeometry(10.7,10.95,.18,64),mat(0x35344e,.65),0,-.08,-.9);
+// Line rings and stylised arena markings avoid external textures.
+function ring(r,color,y=.025,x=0,z=-.9,opacity=.45){
+ const o=new T.Mesh(new T.RingGeometry(r-.055,r+.055,84),new T.MeshBasicMaterial({color,transparent:true,opacity,side:T.DoubleSide,depthWrite:false}));o.rotation.x=-Math.PI/2;o.position.set(x,y,z);scene.add(o);return o;
+}
+ring(9.5,0x655eab,.025);ring(7.65,0x4d83b7,.025);ring(4.8,0x71519f,.025);
+for(let i=0;i<20;i++){
+ const ang=i*Math.PI/10;
+ const ln=mesh(new T.BoxGeometry(.12,.025,.78),glow(i%5===0?0x70e7e3:0x716baf,.7),Math.sin(ang)*9.1,.028,-.9+Math.cos(ang)*9.1);
+ ln.rotation.y=ang;
+}
+const colliders=[];
+function pillar(x,z){
+ const base=mesh(new T.CylinderGeometry(.76,.88,.35,8),mat(0x24243d),x,.19,z);
+ const p=mesh(new T.CylinderGeometry(.52,.61,3.2,8),pillarMat,x,1.92,z);p.rotation.y=Math.PI/8;
+ mesh(new T.CylinderGeometry(.62,.62,.12,8),glow(0x3ebcc9,.85),x,3.55,z);
+ const top=mesh(new T.OctahedronGeometry(.33,0),glow(0x74f7f1,.9),x,3.94,z);
+ colliders.push({x,z,r:.8});return {top};
+}
+const pillars=[pillar(-9,-8),pillar(9,-8),pillar(-9,7),pillar(9,7)];
+for(let i=0;i<4;i++){
+ const a=i*Math.PI/2+Math.PI/4;
+ const o=mesh(new T.BoxGeometry(2.3,4,.8),edgeMat,Math.sin(a)*15,2,Math.cos(a)*15);o.rotation.y=a;
+}
+// Stylised character rig assembled from primitives. It is temporary, NOT a finished character.
+function makeFighter(isDummy=false){
+ const root=new T.Group();scene.add(root);
+ const torso=new T.Group();torso.position.y=1.1;root.add(torso);
+ const coat=isDummy?dummyM:uniform;
+ mesh(new T.BoxGeometry(.80,.93,.46),coat,0,.12,0,torso);
+ mesh(new T.BoxGeometry(.69,.17,.50),isDummy?dummyDark:armor,0,-.38,0,torso);
+ mesh(new T.CylinderGeometry(.17,.18,.2,8),skin,0,.64,0,torso);
+ mesh(new T.SphereGeometry(.35,12,10),isDummy?dummyM:skin,0,.95,0,torso);
+ if(!isDummy){
+  mesh(new T.ConeGeometry(.41,.39,7),hair,0,1.28,-.02,torso);
+  for(const x of [-.25,.08,.28]){const sp=mesh(new T.ConeGeometry(.16,.34,4),hair,x,1.36,.15,torso);sp.rotation.z=x;}
+  mesh(new T.BoxGeometry(.52,.10,.14),ink,0,.98,.30,torso);
+ }else{
+  mesh(new T.BoxGeometry(.40,.06,.11),glow(0xf3a6e9),0,.98,.33,torso);
+ }
+ const limbs={arms:[],legs:[]};
+ for(const s of [-1,1]){
+  const arm=new T.Group();arm.position.set(s*.53,.49,0);torso.add(arm);
+  mesh(new T.BoxGeometry(.26,.61,.30),coat,0,-.31,0,arm);
+  mesh(new T.SphereGeometry(.16,10,8),isDummy?dummyDark:fist,0,-.65,.025,arm);
+  limbs.arms.push(arm);
+  const leg=new T.Group();leg.position.set(s*.23,.75,0);root.add(leg);
+  mesh(new T.BoxGeometry(.28,.73,.33),isDummy?dummyDark:armor,0,-.39,0,leg);
+  mesh(new T.BoxGeometry(.32,.19,.55),ink,0,-.64,.13,leg);
+  limbs.legs.push(leg);
+ }
+ const shadow=mesh(new T.CircleGeometry(.67,24),new T.MeshBasicMaterial({color:0x05050e,transparent:true,opacity:.35,depthWrite:false}),0,.025,0);shadow.rotation.x=-Math.PI/2;
+ return {root,torso,...limbs,shadow};
+}
+const fighter=makeFighter(false),dummy=makeFighter(true);fighter.root.position.set(0,0,5.9);dummy.root.position.set(0,0,-4.1);dummy.root.rotation.y=0;
+// Energy/impact effects reuse a small number of 3D meshes.
+const effects=[];
+function burst(x,y,z,color=0x70fafa,size=1){
+ const m=mesh(new T.IcosahedronGeometry(.26*size,1),new T.MeshBasicMaterial({color,transparent:true,opacity:.88,depthWrite:false}),x,y,z);
+ effects.push({m,life:.33,max:.33,type:'burst'});
+ const r=new T.Mesh(new T.RingGeometry(.14,.23,32),new T.MeshBasicMaterial({color,transparent:true,opacity:.8,side:T.DoubleSide,depthWrite:false}));r.position.set(x,y,z);r.lookAt(camera.position);scene.add(r);effects.push({m:r,life:.35,max:.35,type:'ring'});
+}
+const projectileGeo=new T.IcosahedronGeometry(.34,1),projectiles=[];
+const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,jump:false,dash:false,punch:false,kick:false,blast:false};
+function isDown(name){return input.keys.has(name)}
+const stick=$('stick'),nub=$('nub');
+function moveStick(e){const r=stick.getBoundingClientRect(),len=r.width*.32;let x=(e.clientX-r.left-r.width/2)/len,y=(e.clientY-r.top-r.height/2)/len;const a=Math.hypot(x,y);if(a>1){x/=a;y/=a;}input.joystick.x=x;input.joystick.y=y;nub.style.transform=`translate(${x*len}px,${y*len}px)`;}
+function clearStick(){input.joystick.pointer=null;input.joystick.x=0;input.joystick.y=0;nub.style.transform='translate(0,0)';}
+stick.addEventListener('pointerdown',e=>{e.preventDefault();if(input.joystick.pointer!==null)return;input.joystick.pointer=e.pointerId;stick.setPointerCapture(e.pointerId);moveStick(e)});
+stick.addEventListener('pointermove',e=>{if(input.joystick.pointer===e.pointerId){e.preventDefault();moveStick(e)}});
+for(const ev of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(ev,e=>{if(input.joystick.pointer===e.pointerId)clearStick()});
+for(const a of ['jump','dash','punch','kick','blast']){$(a).addEventListener('pointerdown',e=>{e.preventDefault();input[a]=true})}
+$('block').addEventListener('pointerdown',e=>{e.preventDefault();input.blockHeld=true;$('block').classList.add('held')});
+function unblock(){input.blockHeld=false;$('block').classList.remove('held')}
+for(const ev of ['pointerup','pointercancel','lostpointercapture'])$('block').addEventListener(ev,unblock);
+const ignore=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ']);
+window.addEventListener('keydown',e=>{
+ if(ignore.has(e.key))e.preventDefault();const k=e.key.toLowerCase();input.keys.add(k);
+ if(e.repeat)return;
+ if(e.code==='Space')input.jump=true;
+ if(k==='j')input.punch=true;if(k==='k')input.kick=true;if(k==='l')input.blast=true;if(k==='f')input.dash=true;
+ if(k==='r')reset();if(k==='c')$('cameraButton').click();
+});
+window.addEventListener('keyup',e=>input.keys.delete(e.key.toLowerCase()));
+window.addEventListener('blur',()=>{clearStick();input.keys.clear();unblock()});
+let cameraMode=0;
+$('cameraButton').onclick=()=>{cameraMode=(cameraMode+1)%2;$('cameraButton').textContent=cameraMode?'CAM: HIGH':'CAMERA';};
+$('resetButton').onclick=()=>reset();
+$('debugButton').onclick=()=>{$('debug').hidden=!$('debug').hidden;$('debugButton').textContent=$('debug').hidden?'DEBUG OFF':'DEBUG ✓';};
+const pos=fighter.root.position,center=dummy.root.position;
+let hp=100,energy=100,dummyHP=100,dummyRespawn=0,dummyFlash=0,combo=0,comboClock=0;
+let facing=Math.PI,vy=0,grounded=true,walkTime=0,attack=null,attackCd=0,dashT=0,dashCd=0,damagedAt=-5,time=0;
+let toastClock=0;
+function say(s){$('toast').textContent=s;$('toast').style.opacity='1';toastClock=1.1}
+function updateBars(){$('playerHp').style.width=hp+'%';$('energyFill').style.width=energy+'%';$('energyValue').textContent=Math.floor(energy);$('dummyHp').style.width=dummyHP+'%';$('dummyValue').textContent=Math.ceil(dummyHP)}
+function reset(){pos.set(0,0,5.9);fighter.root.rotation.y=Math.PI;facing=Math.PI;dummyHP=100;dummyRespawn=0;dummy.root.visible=true;dummyFlash=0;hp=100;energy=100;combo=0;comboClock=0;vy=0;grounded=true;attack=null;attackCd=0;dashT=0;dashCd=0;input.jump=input.dash=input.punch=input.kick=input.blast=false;for(const p of projectiles)scene.remove(p.m);projectiles.length=0;for(const e of effects)scene.remove(e.m);effects.length=0;updateBars();say('TRAINING RESET');}
+function hitEnemy(dmg,kind){
+ if(dummyRespawn>0||dummyHP<=0)return;
+ dummyHP=Math.max(0,dummyHP-dmg);dummyFlash=.18;
+ if(comboClock>0)combo++;else combo=1;
+ comboClock=2.1;
+ energy=clamp(energy+(kind==='blast'?0:4),0,100);
+ burst(center.x,1.55,center.z,kind==='blast'?0x9b66ff:0x5dfff3,1.45);
+ $('combo').textContent=`${combo} HIT${combo===1?'':'S'} · ${kind.toUpperCase()}!`;$('combo').style.opacity='1';
+ if(dummyHP===0){dummyRespawn=2.0;say('DUMMY DEFEATED · RESPAWNING');}
+ updateBars();
+}
+const attacks={punch:{duration:.30,hitAt:.13,damage:9,reach:2.65},kick:{duration:.43,hitAt:.19,damage:15,reach:3.05}};
+function startAttack(kind){if(input.blockHeld||isDown('b')||attackCd>0||dashT>0||dummyRespawn>0)return;
+ attack={kind,t:0,done:false};attackCd=attacks[kind].duration*.80;
+ // Short-range target alignment: controller does not have a separate lock-on stick yet.
+ const dx=center.x-pos.x,dz=center.z-pos.z,dist=Math.hypot(dx,dz);
+ if(dist<4.2)facing=Math.atan2(dx,dz);
+}
+function launch(){if(input.blockHeld||isDown('b')||attackCd>0||dashT>0)return;
+ if(energy<25){say('NOT ENOUGH CURSED ENERGY');return;}
+ energy-=25;attackCd=.40;attack={kind:'blast',t:0,done:true};
+ const dir=new T.Vector3(Math.sin(facing),0,Math.cos(facing));
+ const m=new T.Mesh(projectileGeo,new T.MeshBasicMaterial({color:0x9e7dff}));m.position.set(pos.x+dir.x*.8,1.45+pos.y,pos.z+dir.z*.8);scene.add(m);
+ projectiles.push({m,dir,life:1.3});burst(m.position.x,m.position.y,m.position.z,0xa772fa,.65);updateBars();
+}
+const radius=.38;
+function canMove(x,z){
+ if(Math.hypot(x,z+.9)>10.1)return false;
+ for(const c of colliders)if(Math.hypot(x-c.x,z-c.z)<radius+c.r)return false;
+ // Training dummy is solid.
+ if(dummyRespawn<=0&&Math.hypot(x-center.x,z-center.z)<1.03)return false;
+ return true;
+}
+const camGoal=new T.Vector3(),camLook=new T.Vector3(),vec=new T.Vector3();
+function resize(){const w=Math.max(innerWidth,1),h=Math.max(innerHeight,1);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=h>w?72:62;camera.updateProjectionMatrix()}
+window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));resize();
+let previous=performance.now(),fCount=0,fClock=0,fps=0;
+camera.position.set(0,5,14);camera.lookAt(0,1,0);
+function frame(now){requestAnimationFrame(frame);const dt=clamp((now-previous)/1000,0,.045);previous=now;if(document.hidden || matchMedia('(orientation: portrait)').matches)return;time+=dt;
+ // Energy regenerates naturally. Dummy stays harmless in this first mechanics test.
+ energy=clamp(energy+dt*6.3,0,100);attackCd=Math.max(0,attackCd-dt);dashCd=Math.max(0,dashCd-dt);
+ if(dummyRespawn>0){dummyRespawn-=dt;dummy.root.visible=false;if(dummyRespawn<=0){dummyHP=100;dummy.root.visible=true;say('DUMMY READY');}};
+ dummyFlash=Math.max(0,dummyFlash-dt);
+ dummy.torso.rotation.z=Math.sin(time*2.3)*.025+(dummyFlash>0?.12:0);
+ dummy.torso.children[0].material=dummyFlash>0?fist:dummyM; // visual hit flash
+ if(toastClock>0){toastClock-=dt;if(toastClock<=0)$('toast').style.opacity='0'}
+ if(comboClock>0){comboClock-=dt;if(comboClock<=0){combo=0;$('combo').style.opacity='0'}}
+ let x=input.joystick.x,z=input.joystick.y;
+ if(isDown('a')||isDown('arrowleft'))x-=1;if(isDown('d')||isDown('arrowright'))x+=1;
+ if(isDown('w')||isDown('arrowup'))z-=1;if(isDown('s')||isDown('arrowdown'))z+=1;
+ const m=Math.hypot(x,z);if(m>1){x/=m;z/=m}
+ const moving=Math.hypot(x,z)>.08;
+ const block=input.blockHeld||isDown('b');
+ if(input.dash&&dashCd<=0&&!block){dashT=.19;dashCd=.7;energy=Math.max(0,energy-5);if(moving)facing=Math.atan2(x,z);burst(pos.x,.9,pos.z,0x65f6fa,.85)}input.dash=false;
+ const speed=dashT>0?13.5:block?1.9:4.5;
+ let mx=x,mz=z;if(dashT>0){mx=Math.sin(facing);mz=Math.cos(facing);dashT=Math.max(0,dashT-dt)}
+ if(attack&&!block&&dashT<=0){mx*=.5;mz*=.5}
+ const dx=mx*speed*dt,dz=mz*speed*dt;
+ if(canMove(pos.x+dx,pos.z))pos.x+=dx;
+ if(canMove(pos.x,pos.z+dz))pos.z+=dz;
+ if(moving&&!block&&dashT<=0&&(!attack||attack.kind==='blast')){
+  const target=Math.atan2(x,z);let diff=((target-facing+Math.PI*3)%(Math.PI*2))-Math.PI;facing+=diff*Math.min(1,dt*15);
+ }
+ fighter.root.rotation.y=facing;
+ if(input.jump&&grounded){vy=7.2;grounded=false}input.jump=false;
+ if(!grounded){vy-=19*dt;pos.y+=vy*dt;if(pos.y<=0){pos.y=0;vy=0;grounded=true}}
+ if(input.punch)startAttack('punch');input.punch=false;
+ if(input.kick)startAttack('kick');input.kick=false;
+ if(input.blast)launch();input.blast=false;
+ if(attack){attack.t+=dt;
+  const cfg=attacks[attack.kind];
+  if(cfg&&!attack.done&&attack.t>=cfg.hitAt){attack.done=true;
+   const ax=center.x-pos.x,az=center.z-pos.z,dist=Math.hypot(ax,az);
+   const front=(Math.sin(facing)*ax+Math.cos(facing)*az)/Math.max(dist,.0001);
+   if(dist<=cfg.reach&&front>.20&&dummyRespawn<=0)hitEnemy(cfg.damage,attack.kind);
+  }
+  if(attack.t>=(cfg?cfg.duration:.40))attack=null;
+ }
+ for(let i=projectiles.length-1;i>=0;i--){
+  const p=projectiles[i];p.life-=dt;p.m.position.addScaledVector(p.dir,dt*16);p.m.rotation.x+=dt*8;p.m.rotation.y+=dt*8;
+  if(dummyRespawn<=0&&p.m.position.distanceTo(new T.Vector3(center.x,1.3,center.z))<1.05){hitEnemy(22,'blast');p.life=-1;}
+  if(p.life<=0||Math.hypot(p.m.position.x,p.m.position.z+.9)>11){scene.remove(p.m);p.m.geometry=projectileGeo;projectiles.splice(i,1)}
+ }
+ for(let i=effects.length-1;i>=0;i--){
+  const e=effects[i];e.life-=dt;const t=1-e.life/e.max;e.m.scale.setScalar(1+t*(e.type==='ring'?4:2));e.m.material.opacity=(1-t)*.85;
+  if(e.life<=0){scene.remove(e.m);e.m.geometry.dispose();e.m.material.dispose();effects.splice(i,1)}
+ }
+ walkTime+=dt*(moving?speed*2.6:4);
+ const stride=grounded&&moving?Math.sin(walkTime)*.47:0;
+ fighter.legs[0].rotation.x=stride;fighter.legs[1].rotation.x=-stride;
+ fighter.arms[0].rotation.x=-stride*.55;fighter.arms[1].rotation.x=stride*.55;
+ fighter.arms[0].rotation.z=0;fighter.arms[1].rotation.z=0;fighter.torso.rotation.x=0;
+ if(block){fighter.arms[0].rotation.x=-1.22;fighter.arms[1].rotation.x=-1.22;fighter.arms[0].rotation.z=-.24;fighter.arms[1].rotation.z=.24;}
+ if(attack){const a=attack.kind;const phase=Math.sin(Math.min(1,attack.t/(attacks[a]?.duration||.40))*Math.PI);
+  if(a==='punch'){fighter.arms[1].rotation.x=-2.0*phase;fighter.torso.rotation.y=-.13*phase;}
+  if(a==='kick'){fighter.legs[1].rotation.x=-1.65*phase;fighter.torso.rotation.x=-.23*phase;}
+  if(a==='blast'){fighter.arms[0].rotation.x=-1.6*phase;fighter.arms[1].rotation.x=-1.6*phase;}
+ }
+ fighter.torso.rotation.z=block?0:Math.sin(walkTime)*.035;
+ fighter.shadow.position.set(pos.x,.025,pos.z);fighter.shadow.material.opacity=.3/(1+pos.y*.45);
+ dummy.shadow.position.set(center.x,.025,center.z);
+ for(const p of pillars)p.top.rotation.y+=dt*.3;
+ const cx=pos.x,cy=pos.y,cz=pos.z;
+ if(cameraMode===0){camGoal.set(cx,cy+4.5,cz+8.3);camLook.set(cx,cy+1.25,cz-2.2)}
+ else{camGoal.set(cx,cy+12.5,cz+6.0);camLook.set(cx,cy+1,cz-1)}
+ camera.position.lerp(camGoal,1-Math.exp(-dt*6));vec.copy(camLook);camera.lookAt(vec);
+ renderer.render(scene,camera);
+ fClock+=dt;fCount++;
+ if(fClock>.45){fps=Math.round(fCount/fClock);fCount=0;fClock=0;
+  $('fps').textContent=fps;$('position').textContent=`${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`;
+  $('state').textContent=attack?attack.kind.toUpperCase():block?'BLOCK':dashT>0?'DASH':grounded?(moving?'MOVING':'IDLE'):'AIRBORNE';
+  updateBars();
+ }
+}
+updateBars();msg.style.display='none';requestAnimationFrame(frame);
+} catch(error){fail(error)} })();
+</script>
+</body>
+</html>
