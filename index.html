@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Freddy's 3D Anime Fighting Game — Combat Lab v0.3.2</title>
+<title>Freddy's 3D Anime Fighting Game — Combat Lab v0.3.3</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -84,11 +84,11 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">COMBAT LAB<small>FREDDY'S 3D FIGHTER · v0.3.2</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">COMBAT LAB<small>FREDDY'S 3D FIGHTER · v0.3.3</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
-<div id="topButtons"><button class="tool active" id="lockButton">LOCK ✓</button><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button><button class="tool" id="pauseButton">PAUSE</button></div>
+<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button><button class="tool" id="pauseButton">PAUSE</button></div>
 <div id="combo"></div><div id="toast"></div><div id="damageFly"></div><div id="landscapeHint">Best in landscape ↻</div>
 <div id="bottom"><div id="stick"><div id="nub"></div></div><div id="actions">
   <button class="act" id="block">BLOCK</button><button class="act" id="blast">ENERGY</button><button class="act" id="jump">JUMP</button>
@@ -99,14 +99,14 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>COMBAT LAB · PAUSED</h2><p>Third-person anime fighting prototype v0.3.2</p>
+  <div class="panel"><h2>COMBAT LAB · PAUSED</h2><p>Third-person anime fighting prototype v0.3.3</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = move; push fully to sprint. PUNCH / KICK = melee combos. DASH = evade. BLOCK = hold to guard. ENERGY = cursed energy projectile. LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
 </div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Combat Lab v0.3.2</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Combat Lab v0.3.3</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.3.2
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.3.3
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -309,13 +309,13 @@ function burst(x,y,z,color=0x70fafa,size=1){
  const r=new T.Mesh(new T.RingGeometry(.14,.23,32),new T.MeshBasicMaterial({color,transparent:true,opacity:.8,side:T.DoubleSide,depthWrite:false}));r.position.set(x,y,z);r.lookAt(camera.position);scene.add(r);effects.push({m:r,life:.35,max:.35,type:'ring'});
 }
 const projectileGeo=new T.IcosahedronGeometry(.34,1),projectiles=[];
-// COMBAT LAB v0.3.2 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.3.3 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
 let hp=100,energy=100,dummyHP=100,dummyRespawn=0,dummyFlash=0,combo=0,comboClock=0;
 let facing=Math.PI,vy=0,grounded=true,walkTime=0,attack=null,attackCd=0,dashT=0,dashCd=0,time=0;
-let cameraMode=0,lockedOn=true,paused=false,sfxOn=true,dummyMode=0,duel=false,fightSeconds=90,fightOver=false;
+let cameraMode=0,lockedOn=false,paused=false,sfxOn=true,dummyMode=0,duel=false,fightSeconds=90,fightOver=false;
 let totalHits=0,bestCombo=0,damageDealt=0,dummyKOs=0,playerHits=0;
 let dummyStun=0,playerStun=0,hitInvuln=0,dummySwing=0,dummyAttackCd=1.25,playerKOClock=0,damageFlyClock=0,queuedAttack='';
 let toastClock=0,audioCtx=null;
@@ -323,6 +323,32 @@ const DUMMY_MODES=['STILL','GUARD','SPAR'];
 const radius=.38;
 const camGoal=new T.Vector3(),camLook=new T.Vector3(),camSmoothLook=new T.Vector3(0,1,0);
 const cameraRaycaster=new T.Raycaster(),dirToCamera=new T.Vector3();
+// Independent camera yaw/pitch. Never force Freddy to face where the camera looks.
+let freeCamYaw=Math.PI,freeCamPitch=.34,freeCamDistance=8.7;
+let camPointer=null,camTouchX=0,camTouchY=0,dashDirX=0,dashDirZ=-1;
+function clearCamTouch(){camPointer=null;}
+const lookCanvas=$('screen');
+lookCanvas.addEventListener('pointerdown',e=>{
+ if(lockedOn||paused||fightOver||camPointer!==null||e.clientX<innerWidth*.32)return;
+ if(e.pointerType==='mouse'&&e.button!==0)return;
+ e.preventDefault();camPointer=e.pointerId;camTouchX=e.clientX;camTouchY=e.clientY;
+ try{lookCanvas.setPointerCapture(e.pointerId);}catch(_){}
+});
+lookCanvas.addEventListener('pointermove',e=>{
+ if(e.pointerId!==camPointer)return;
+ e.preventDefault();
+ const dx=e.clientX-camTouchX,dy=e.clientY-camTouchY;
+ camTouchX=e.clientX;camTouchY=e.clientY;
+ freeCamYaw-=dx*.0064;
+ freeCamPitch=clamp(freeCamPitch-dy*.0046,-.10,.94);
+});
+for(const eventName of ['pointerup','pointercancel','lostpointercapture']){
+ lookCanvas.addEventListener(eventName,e=>{if(e.pointerId===camPointer)clearCamTouch();});
+}
+lookCanvas.addEventListener('wheel',e=>{
+ if(lockedOn)return;e.preventDefault();
+ freeCamDistance=clamp(freeCamDistance+Math.sign(e.deltaY)*.55,6.2,13);
+},{passive:false});
 const targetMarker=new T.Mesh(new T.RingGeometry(.65,.76,32),new T.MeshBasicMaterial({color:0x6bffed,transparent:true,opacity:.74,side:T.DoubleSide,depthWrite:false}));
 targetMarker.rotation.x=-Math.PI/2;targetMarker.position.y=.046;scene.add(targetMarker);
 function say(s){$('toast').textContent=s;$('toast').style.opacity='1';toastClock=1.1;}
@@ -344,7 +370,7 @@ function moveEntity(o,x,z,forDummy=false){
 }
 function reset(){
  fightOver=false;fightSeconds=90;$('resultLayer').classList.remove('open');$('fightClock').textContent=duel?'DUEL · 90s':'FREE TRAINING';
- pos.set(0,0,5.9);fighter.root.rotation.y=Math.PI;facing=Math.PI;center.set(0,0,-4.1);dummy.root.rotation.y=0;
+ pos.set(0,0,5.9);fighter.root.rotation.y=Math.PI;facing=Math.PI;freeCamYaw=Math.PI;freeCamPitch=.34;dashDirX=0;dashDirZ=-1;clearCamTouch();center.set(0,0,-4.1);dummy.root.rotation.y=0;
  hp=100;energy=100;dummyHP=100;dummyRespawn=0;dummy.root.visible=true;dummyFlash=0;combo=0;comboClock=0;
  vy=0;grounded=true;attack=null;attackCd=0;dashT=0;dashCd=0;playerStun=0;dummyStun=0;hitInvuln=0;dummySwing=0;dummyAttackCd=1.25;playerKOClock=0;queuedAttack='';
  totalHits=0;bestCombo=0;damageDealt=0;dummyKOs=0;playerHits=0;clearStick();unblock();
@@ -401,7 +427,7 @@ function startAttack(kind){
  if(attackCd>0||attack){if(attack)queuedAttack=kind;return;}
  attack={kind,t:0,done:false};attackCd=attacks[kind].duration*.85;
  const dx=center.x-pos.x,dz=center.z-pos.z;
- if(Math.hypot(dx,dz)<4.2)facing=Math.atan2(dx,dz);
+ if(lockedOn&&Math.hypot(dx,dz)<4.2)facing=Math.atan2(dx,dz);
  sound('swing');
 }
 function launch(){
@@ -435,8 +461,8 @@ window.addEventListener('keydown',e=>{
  if(k==='i')$('dummyButton').click();if(k==='p')$('pauseButton').click();if(k==='m')$('modeButton').click();
 });
 window.addEventListener('keyup',e=>input.keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur',()=>{clearStick();input.keys.clear();unblock();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearStick();unblock();input.keys.clear();}});
+window.addEventListener('blur',()=>{clearStick();clearCamTouch();input.keys.clear();unblock();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearStick();clearCamTouch();unblock();input.keys.clear();}});
 function endFight(result){
  fightOver=true;clearStick();unblock();
  const title=result==='win'?'YOU WIN!':result==='lose'?'YOU LOSE':'DRAW';
@@ -456,12 +482,23 @@ function setGameMode(v){
  $('modeButton').classList.toggle('active',duel);
  updateTrainingModeUI();reset();say(duel?'1 VS 1 · FIGHT!':'FREE TRAINING');
 }
-function setPaused(v){if(fightOver)return;paused=v;$('pauseLayer').classList.toggle('open',v);if(v){clearStick();unblock();input.keys.clear();}}
+function setPaused(v){if(fightOver)return;paused=v;$('pauseLayer').classList.toggle('open',v);if(v){clearStick();clearCamTouch();unblock();input.keys.clear();}}
 $('pauseButton').onclick=()=>setPaused(!paused);
 $('resumeButton').onclick=()=>setPaused(false);
 $('resetPauseButton').onclick=()=>{reset();setPaused(false);};
 $('sfxButton').onclick=()=>{sfxOn=!sfxOn;$('sfxButton').textContent='SFX: '+(sfxOn?'ON':'OFF');};
-$('lockButton').onclick=()=>{lockedOn=!lockedOn;$('lockButton').textContent=lockedOn?'LOCK ✓':'LOCK OFF';$('lockButton').classList.toggle('active',lockedOn);say(lockedOn?'TARGET LOCKED':'FREE CAMERA');};
+$('lockButton').onclick=()=>{
+ lockedOn=!lockedOn;clearCamTouch();
+ if(!lockedOn){
+  // On unlock, match the current camera view so the transition is smooth.
+  const fx=camSmoothLook.x-camera.position.x,fz=camSmoothLook.z-camera.position.z;
+  if(Math.hypot(fx,fz)>.01)freeCamYaw=Math.atan2(fx,fz);
+  freeCamPitch=clamp(Math.atan2(camera.position.y-(pos.y+1.55),Math.hypot(pos.x-camera.position.x,pos.z-camera.position.z)),-.10,.94);
+ }
+ $('lockButton').textContent=lockedOn?'LOCK ✓':'LOCK OFF';
+ $('lockButton').classList.toggle('active',lockedOn);
+ say(lockedOn?'TARGET LOCKED':'SWIPE RIGHT SIDE TO LOOK');
+};
 $('cameraButton').onclick=()=>{cameraMode=(cameraMode+1)%2;$('cameraButton').textContent=cameraMode?'CAM: HIGH':'CAMERA';};
 $('dummyButton').onclick=()=>{if(duel)return;dummyMode=(dummyMode+1)%3;updateTrainingModeUI();dummyAttackCd=1.2;say('DUMMY: '+DUMMY_MODES[dummyMode]);};
 $('modeButton').onclick=()=>{setPaused(false);setGameMode(!duel);};
@@ -472,7 +509,7 @@ $('debugButton').onclick=()=>{$('debug').hidden=!$('debug').hidden;$('debugButto
 function resize(){const w=Math.max(innerWidth,1),h=Math.max(innerHeight,1);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=h>w?72:62;camera.updateProjectionMatrix();}
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,200));resize();
 let previous=performance.now(),fCount=0,fClock=0,fps=0;
-camera.position.set(0,5.5,14);camera.lookAt(0,1,0);
+camera.position.set(0,5.5,14);camSmoothLook.set(0,1.55,5.9);camera.lookAt(camSmoothLook);
 function frame(now){
  requestAnimationFrame(frame);
  const dt=clamp((now-previous)/1000,0,.045);previous=now;
@@ -520,19 +557,34 @@ function frame(now){
  if(isDown('w')||isDown('arrowup'))z-=1;if(isDown('s')||isDown('arrowdown'))z+=1;
  let magnitude=Math.hypot(x,z);if(magnitude>1){x/=magnitude;z/=magnitude;magnitude=1;}
  const moving=magnitude>.08,block=input.blockHeld||isDown('b'),sprinting=magnitude>.87&&!block&&!attack;
+ // Convert stick movement into the CAMERA's horizontal world directions.
+ let moveYaw=freeCamYaw;
+ if(lockedOn){
+  const fx=camSmoothLook.x-camera.position.x,fz=camSmoothLook.z-camera.position.z;
+  if(Math.hypot(fx,fz)>.01)moveYaw=Math.atan2(fx,fz);
+ }
+ const fwdX=Math.sin(moveYaw),fwdZ=Math.cos(moveYaw);
+ const wx=-fwdZ*x-fwdX*z,wz=fwdX*x-fwdZ*z;
  if(input.dash&&dashCd<=0&&!block&&playerKOClock<=0&&playerStun<=0&&energy>=5){
-  dashT=.19;dashCd=.7;energy-=5;if(moving)facing=Math.atan2(x,z);burst(pos.x,.9,pos.z,0x65f6fa,.85);sound('swing');
+  dashT=.19;dashCd=.7;energy-=5;
+  if(moving){dashDirX=wx;dashDirZ=wz;if(!lockedOn)facing=Math.atan2(wx,wz);}
+  else{dashDirX=Math.sin(facing);dashDirZ=Math.cos(facing);}
+  burst(pos.x,.9,pos.z,0x65f6fa,.85);sound('swing');
  }input.dash=false;
  const speed=dashT>0?13.5:block?1.9:sprinting?6.0:4.5;
- let mx=x,mz=z;
- if(dashT>0){mx=Math.sin(facing);mz=Math.cos(facing);dashT=Math.max(0,dashT-dt);}
+ let mx=wx,mz=wz;
+ if(dashT>0){mx=dashDirX;mz=dashDirZ;dashT=Math.max(0,dashT-dt);}
  if(attack&&dashT<=0){mx*=.45;mz*=.45;}
  if(playerStun>0||playerKOClock>0){mx=0;mz=0;}
  moveEntity(pos,mx*speed*dt,mz*speed*dt);
- if(moving&&!lockedOn&&!block&&dashT<=0&&(!attack||attack.kind==='blast')){
-  const target=Math.atan2(x,z);let diff=((target-facing+Math.PI*3)%(Math.PI*2))-Math.PI;facing+=diff*Math.min(1,dt*15);
+ // In FREE mode movement turns Freddy; stopping or orbiting doesn't.
+ if(moving&&!lockedOn&&dashT<=0&&(!attack||attack.kind==='blast')&&playerStun<=0&&playerKOClock<=0){
+  const target=Math.atan2(wx,wz),diff=((target-facing+Math.PI*3)%(Math.PI*2))-Math.PI;
+  facing+=diff*Math.min(1,dt*18);
  }
- if(lockedOn&&dummyRespawn<=0&&Math.hypot(center.x-pos.x,center.z-pos.z)>.2&&dashT<=0)facing=Math.atan2(center.x-pos.x,center.z-pos.z);
+ // In LOCK mode the opponent determines facing, even while strafing/dashing.
+ if(lockedOn&&dummyRespawn<=0&&Math.hypot(center.x-pos.x,center.z-pos.z)>.2)
+  facing=Math.atan2(center.x-pos.x,center.z-pos.z);
  fighter.root.rotation.y=facing;
  if(input.jump&&grounded&&playerKOClock<=0){vy=7.2;grounded=false;}input.jump=false;
  if(!grounded){vy-=19*dt;pos.y+=vy*dt;if(pos.y<=0){pos.y=0;vy=0;grounded=true;}}
@@ -574,15 +626,18 @@ function frame(now){
  fighter.shadow.position.set(pos.x,.025,pos.z);fighter.shadow.material.opacity=.3/(1+pos.y*.45);
  dummy.shadow.position.set(center.x,.025,center.z);
  for(const p of pillars)p.top.rotation.y+=dt*.3;
- // Full-body third-person camera. LOCK tracks both fighters; FREE follows player facing.
+ // Third-person: LOCK frames both fighters, FREE orbits independently of facing.
  if(lockedOn&&dummyRespawn<=0){
   const bx=pos.x-center.x,bz=pos.z-center.z,dist=Math.max(.01,Math.hypot(bx,bz)),gap=clamp(7+dist*.48,9,14.5);
   const mx=lerp(pos.x,center.x,.42),mz=lerp(pos.z,center.z,.42);
   camGoal.set(mx+bx/dist*gap,pos.y+4.2+dist*.12,mz+bz/dist*gap);
   camLook.set(mx,pos.y*.32+1.35,mz);
  }else{
-  camGoal.set(pos.x-Math.sin(facing)*8,pos.y+4.0,pos.z-Math.cos(facing)*8);
-  camLook.set(pos.x+Math.sin(facing),pos.y+1.4,pos.z+Math.cos(facing));
+  const radius=freeCamDistance*Math.cos(freeCamPitch);
+  camGoal.set(pos.x-Math.sin(freeCamYaw)*radius,
+   pos.y+1.55+freeCamDistance*Math.sin(freeCamPitch),
+   pos.z-Math.cos(freeCamYaw)*radius);
+  camLook.set(pos.x,pos.y+1.55,pos.z);
  }
  if(cameraMode===1){camGoal.y+=5.2;camGoal.x+=(camGoal.x-camLook.x)*.22;camGoal.z+=(camGoal.z-camLook.z)*.22;}
  // Pull the camera forward if a pillar would obstruct the character.
