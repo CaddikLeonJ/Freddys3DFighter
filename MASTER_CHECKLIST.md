@@ -9,7 +9,7 @@
 ## ✅ Set up / confirmed
 
 - [x] Dedicated GitHub repository created: `Freddys3DFighter`
-- [x] `index.html` Combat Lab v0.3.1 committed to GitHub
+- [x] `index.html` Combat Lab v0.3.3 committed to GitHub
 - [x] Simple GitHub → Scriptable updater installed and tested on iPhone
 - [x] 3D training arena opens and runs on iPhone 13
 - [x] Landscape-only interface/orientation prompt in prototype
@@ -28,6 +28,18 @@
 - [x] Keep player collision, combat, camera, animation and training dummy behavior in the existing game.
 - [ ] Test the new character on an actual iPhone 13; adjust style, scale, hair or clothing after screenshots.
 - [ ] Replace procedural avatar with a proper textured/rigged GLB when available.
+
+## 🎥 Third-person free-look camera — v0.3.3
+- [x] Make free-look the default camera with right-side swipe orbit on iPhone
+- [x] Camera turns independently of Freddy's body orientation
+- [x] Joystick and keyboard movement are relative to the camera's view
+- [x] Player faces the direction of travel when not locked on
+- [x] Freddy keeps the last facing direction when movement stops
+- [x] Lock-on faces the opponent even during strafes and dashes
+- [x] Smooth return to free-look after unlocking
+- [x] Preserve existing optional high camera and pillar-avoidance
+- [ ] Test on real iPhone 13: right-side swipe, move and orbit simultaneously, lock transitions and joystick directions
+- [ ] Adjust camera sensitivity and pitch limits based on playtest
 
 ## 🎯 Next sprint — make the fighting feel good
 
