@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Freddy's 3D Anime Fighting Game — Combat Lab v0.3.0</title>
+<title>Freddy's 3D Anime Fighting Game — Combat Lab v0.3.1</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -48,6 +48,13 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 #portraitLock p{font-size:14px;line-height:1.5;color:#d3d7ee;margin:0}
 #portraitLock p+p{margin-top:10px;color:#adb5d6;font-size:12px}
 #landscapeHint{display:none!important}
+#resultLayer{display:none;position:fixed;inset:0;z-index:950;align-items:center;justify-content:center;background:#050719e6;padding:12px}
+#resultLayer.open{display:flex}
+#resultLayer .resultCard{border:1px solid #8da5f688;background:#16182ff5;border-radius:20px;padding:20px;text-align:center;max-width:420px;width:100%;box-shadow:0 12px 40px #0008}
+#resultLayer h2{font-size:27px;color:#e8e4ff;margin:2px 0 10px}
+#resultLayer p{color:#c2cbe9;font-size:13px}
+#resultLayer button{border:1px solid #90acdd;background:#263762;color:white;border-radius:10px;font-size:11px;font-weight:900;padding:12px;margin:6px}
+#modeButton{border-color:#f5a77f88}
 #pauseLayer{display:none;position:fixed;inset:0;z-index:900;align-items:center;justify-content:center;background:#050719d9;backdrop-filter:blur(9px);padding:12px}
 #pauseLayer.open{display:flex}
 #pauseLayer .panel{max-width:480px;width:100%;max-height:96%;overflow:auto;text-align:center;background:#16182fec;border:1px solid #8da5f688;border-radius:20px;padding:20px;box-shadow:0 8px 45px #000a}
@@ -77,25 +84,29 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · TRAINING FIGHTER</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">COMBAT LAB<small>FREDDY'S 3D FIGHTER · v0.3.0</small></div>
+  <div id="centerTitle">COMBAT LAB<small>FREDDY'S 3D FIGHTER · v0.3.1</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
-<div id="topButtons"><button class="tool active" id="lockButton">LOCK ✓</button><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button><button class="tool" id="pauseButton">PAUSE</button></div>
+<div id="topButtons"><button class="tool active" id="lockButton">LOCK ✓</button><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button><button class="tool" id="pauseButton">PAUSE</button></div>
 <div id="combo"></div><div id="toast"></div><div id="damageFly"></div><div id="landscapeHint">Best in landscape ↻</div>
 <div id="bottom"><div id="stick"><div id="nub"></div></div><div id="actions">
   <button class="act" id="block">BLOCK</button><button class="act" id="blast">ENERGY</button><button class="act" id="jump">JUMP</button>
   <button class="act" id="punch">PUNCH</button><button class="act" id="kick">KICK</button><button class="act" id="dash">DASH</button>
 </div></div>
+<div id="resultLayer" role="dialog" aria-label="Fight result"><div class="resultCard">
+    <h2 id="resultTitle">FIGHT OVER</h2><p id="resultDetail">Round finished</p>
+    <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
+</div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>COMBAT LAB · PAUSED</h2><p>Third-person anime fighting prototype v0.3.0</p>
+  <div class="panel"><h2>COMBAT LAB · PAUSED</h2><p>Third-person anime fighting prototype v0.3.1</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = move; push fully to sprint. PUNCH / KICK = melee combos. DASH = evade. BLOCK = hold to guard. ENERGY = cursed energy projectile. LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
 </div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Combat Lab v0.3.0</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Combat Lab v0.3.1</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.3.0
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.3.1
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -195,13 +206,13 @@ function burst(x,y,z,color=0x70fafa,size=1){
  const r=new T.Mesh(new T.RingGeometry(.14,.23,32),new T.MeshBasicMaterial({color,transparent:true,opacity:.8,side:T.DoubleSide,depthWrite:false}));r.position.set(x,y,z);r.lookAt(camera.position);scene.add(r);effects.push({m:r,life:.35,max:.35,type:'ring'});
 }
 const projectileGeo=new T.IcosahedronGeometry(.34,1),projectiles=[];
-// COMBAT LAB v0.3.0 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.3.1 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
 let hp=100,energy=100,dummyHP=100,dummyRespawn=0,dummyFlash=0,combo=0,comboClock=0;
 let facing=Math.PI,vy=0,grounded=true,walkTime=0,attack=null,attackCd=0,dashT=0,dashCd=0,time=0;
-let cameraMode=0,lockedOn=true,paused=false,sfxOn=true,dummyMode=0;
+let cameraMode=0,lockedOn=true,paused=false,sfxOn=true,dummyMode=0,duel=false,fightSeconds=90,fightOver=false;
 let totalHits=0,bestCombo=0,damageDealt=0,dummyKOs=0,playerHits=0;
 let dummyStun=0,playerStun=0,hitInvuln=0,dummySwing=0,dummyAttackCd=1.25,playerKOClock=0,damageFlyClock=0,queuedAttack='';
 let toastClock=0,audioCtx=null;
@@ -229,6 +240,7 @@ function moveEntity(o,x,z,forDummy=false){
  if(movementAllowed(o.x,o.z+z,forDummy))o.z+=z;
 }
 function reset(){
+ fightOver=false;fightSeconds=90;$('resultLayer').classList.remove('open');$('fightClock').textContent=duel?'DUEL · 90s':'FREE TRAINING';
  pos.set(0,0,5.9);fighter.root.rotation.y=Math.PI;facing=Math.PI;center.set(0,0,-4.1);dummy.root.rotation.y=0;
  hp=100;energy=100;dummyHP=100;dummyRespawn=0;dummy.root.visible=true;dummyFlash=0;combo=0;comboClock=0;
  vy=0;grounded=true;attack=null;attackCd=0;dashT=0;dashCd=0;playerStun=0;dummyStun=0;hitInvuln=0;dummySwing=0;dummyAttackCd=1.25;playerKOClock=0;queuedAttack='';
@@ -267,7 +279,7 @@ function hitEnemy(dmg,kind){
  burst(center.x,1.55,center.z,kind==='blast'?0x9b66ff:0x5dfff3,guarded?.8:1.45);
  $('combo').textContent=combo+' HIT'+(combo===1?'':'S')+' · '+kind.toUpperCase();$('combo').style.opacity='1';
  if(!guarded){const dx=center.x-pos.x,dz=center.z-pos.z,d=Math.max(.001,Math.hypot(dx,dz));moveEntity(center,dx/d*.14,dz/d*.14,true);}
- if(dummyHP===0){dummyRespawn=2.0;dummyKOs++;say('DUMMY DEFEATED · RESPAWNING');}
+ if(dummyHP===0){dummyKOs++;if(duel)endFight('win');else{dummyRespawn=2.0;say('DUMMY DEFEATED · RESPAWNING');}}
  updateBars();
 }
 function hitPlayer(dmg){
@@ -277,7 +289,7 @@ function hitPlayer(dmg){
  sound(guarding?'guard':'hit');popup(guarding?'BLOCK -2':'YOU -'+applied,guarding?'#8df1ff':'#ff8b9f');
  burst(pos.x,pos.y+1.35,pos.z,guarding?0x5deee5:0xff668c,.95);
  if(!guarding){const dx=pos.x-center.x,dz=pos.z-center.z,d=Math.max(.01,Math.hypot(dx,dz));moveEntity(pos,dx/d*.42,dz/d*.42);}
- if(hp===0){playerKOClock=2.5;say('KNOCKED OUT · RECOVERING');}
+ if(hp===0){if(duel)endFight('lose');else{playerKOClock=2.5;say('KNOCKED OUT · RECOVERING');}}
  updateBars();
 }
 const attacks={punch:{duration:.30,hitAt:.13,damage:9,reach:2.65},kick:{duration:.43,hitAt:.19,damage:15,reach:3.05}};
@@ -317,19 +329,41 @@ window.addEventListener('keydown',e=>{
  if(e.code==='Space')input.jump=true;
  if(k==='j')input.punch=true;if(k==='k')input.kick=true;if(k==='l')input.blast=true;if(k==='f')input.dash=true;
  if(k==='r')reset();if(k==='c')$('cameraButton').click();if(k==='o')$('lockButton').click();
- if(k==='i')$('dummyButton').click();if(k==='p')$('pauseButton').click();
+ if(k==='i')$('dummyButton').click();if(k==='p')$('pauseButton').click();if(k==='m')$('modeButton').click();
 });
 window.addEventListener('keyup',e=>input.keys.delete(e.key.toLowerCase()));
 window.addEventListener('blur',()=>{clearStick();input.keys.clear();unblock();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearStick();unblock();input.keys.clear();}});
-function setPaused(v){paused=v;$('pauseLayer').classList.toggle('open',v);if(v){clearStick();unblock();input.keys.clear();}}
+function endFight(result){
+ fightOver=true;clearStick();unblock();
+ const title=result==='win'?'YOU WIN!':result==='lose'?'YOU LOSE':'DRAW';
+ $('resultTitle').textContent=title;
+ $('resultDetail').textContent='Damage dealt: '+Math.round(damageDealt)+' · Best combo: '+bestCombo+' · Hits landed: '+totalHits;
+ $('resultLayer').classList.add('open');$('fightClock').textContent=title;
+}
+function updateTrainingModeUI(){
+ $('dummyButton').textContent='AI: '+DUMMY_MODES[dummyMode];
+ $('dummyButton').disabled=duel;
+ $('dummyButton').style.opacity=duel?'.5':'1';
+ $('dummyModeLabel').textContent=DUMMY_MODES[dummyMode]+(dummyMode===0?' · PASSIVE':dummyMode===1?' · BLOCKING':' · ATTACKING');
+}
+function setGameMode(v){
+ duel=v;dummyMode=duel?2:0;
+ $('modeButton').textContent=duel?'MODE: DUEL':'MODE: TRAIN';
+ $('modeButton').classList.toggle('active',duel);
+ updateTrainingModeUI();reset();say(duel?'1 VS 1 · FIGHT!':'FREE TRAINING');
+}
+function setPaused(v){if(fightOver)return;paused=v;$('pauseLayer').classList.toggle('open',v);if(v){clearStick();unblock();input.keys.clear();}}
 $('pauseButton').onclick=()=>setPaused(!paused);
 $('resumeButton').onclick=()=>setPaused(false);
 $('resetPauseButton').onclick=()=>{reset();setPaused(false);};
 $('sfxButton').onclick=()=>{sfxOn=!sfxOn;$('sfxButton').textContent='SFX: '+(sfxOn?'ON':'OFF');};
 $('lockButton').onclick=()=>{lockedOn=!lockedOn;$('lockButton').textContent=lockedOn?'LOCK ✓':'LOCK OFF';$('lockButton').classList.toggle('active',lockedOn);say(lockedOn?'TARGET LOCKED':'FREE CAMERA');};
 $('cameraButton').onclick=()=>{cameraMode=(cameraMode+1)%2;$('cameraButton').textContent=cameraMode?'CAM: HIGH':'CAMERA';};
-$('dummyButton').onclick=()=>{dummyMode=(dummyMode+1)%3;$('dummyButton').textContent='AI: '+DUMMY_MODES[dummyMode];$('dummyModeLabel').textContent=DUMMY_MODES[dummyMode]+(dummyMode===0?' · PASSIVE':dummyMode===1?' · BLOCKING':' · ATTACKING');dummyAttackCd=1.2;say('DUMMY: '+DUMMY_MODES[dummyMode]);};
+$('dummyButton').onclick=()=>{if(duel)return;dummyMode=(dummyMode+1)%3;updateTrainingModeUI();dummyAttackCd=1.2;say('DUMMY: '+DUMMY_MODES[dummyMode]);};
+$('modeButton').onclick=()=>{setPaused(false);setGameMode(!duel);};
+$('rematchButton').onclick=()=>{setGameMode(true);};
+$('trainingButton').onclick=()=>{setGameMode(false);};
 $('resetButton').onclick=()=>reset();
 $('debugButton').onclick=()=>{$('debug').hidden=!$('debug').hidden;$('debugButton').textContent=$('debug').hidden?'DEBUG OFF':'DEBUG ✓';};
 function resize(){const w=Math.max(innerWidth,1),h=Math.max(innerHeight,1);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=h>w?72:62;camera.updateProjectionMatrix();}
@@ -339,8 +373,17 @@ camera.position.set(0,5.5,14);camera.lookAt(0,1,0);
 function frame(now){
  requestAnimationFrame(frame);
  const dt=clamp((now-previous)/1000,0,.045);previous=now;
- if(document.hidden||paused||matchMedia('(orientation: portrait)').matches)return;
+ if(document.hidden||paused||fightOver||matchMedia('(orientation: portrait)').matches)return;
  time+=dt;
+ if(duel){
+  fightSeconds=Math.max(0,fightSeconds-dt);
+  $('fightClock').textContent='DUEL · '+Math.ceil(fightSeconds)+'s';
+  if(fightSeconds<=0){
+   endFight(hp>dummyHP?'win':hp<dummyHP?'lose':'draw');
+   renderer.render(scene,camera);
+   return;
+  }
+ }
  // Timers and meters
  energy=clamp(energy+dt*6.3,0,100);attackCd=Math.max(0,attackCd-dt);dashCd=Math.max(0,dashCd-dt);
  dummyStun=Math.max(0,dummyStun-dt);playerStun=Math.max(0,playerStun-dt);hitInvuln=Math.max(0,hitInvuln-dt);
@@ -454,7 +497,7 @@ function frame(now){
   updateBars();
  }
 }
-updateBars();msg.style.display='none';requestAnimationFrame(frame);
+updateTrainingModeUI();updateBars();msg.style.display='none';requestAnimationFrame(frame);
 } catch(error){fail(error)} })();
 </script>
 </body>
