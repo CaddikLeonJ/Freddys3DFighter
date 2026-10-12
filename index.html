@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.5.9</title>
+<title>Fredutsu Kaisen — Combat Lab v0.5.10</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -88,7 +88,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.9</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.10</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
@@ -103,7 +103,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.9</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.10</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = move; push fully to sprint. PUNCH / KICK = melee combos. DASH = tap to evade; hold to run, steer with joystick. BLOCK = hold to guard. ENERGY = hold to charge up to 5 seconds; release to throw (22–65 damage). LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
@@ -114,10 +114,10 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
 <p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
 </div></div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.9</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.10</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.9
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.10
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -454,6 +454,22 @@ function pointBone(b,child,target){
  const parent=b.parent.getWorldQuaternion(new T.Quaternion());
  b.quaternion.copy(parent.invert().multiply(turn.multiply(world)));
 }
+const legFrames={};
+freddy.updateWorldMatrix(true,true);
+for(const side of ['Left','Right'])for(const suffix of ['UpLeg','Leg']){
+ const bone=freddyBones[side+suffix],child=freddyBones[side+(suffix==='UpLeg'?'Leg':'Foot')];
+ const y=child.position.clone().normalize(),normal=new T.Vector3(-1,0,0).applyQuaternion(fighter.root.getWorldQuaternion(new T.Quaternion())).applyQuaternion(bone.getWorldQuaternion(new T.Quaternion()).invert());
+ normal.addScaledVector(y,-normal.dot(y)).normalize();
+ const z=normal.clone().cross(y).normalize();
+ legFrames[side+suffix]=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(normal,y,z));
+}
+function pointLegInPlane(b,child,target,normal){
+ freddy.updateWorldMatrix(true,true);
+ const y=target.clone().sub(b.getWorldPosition(new T.Vector3())).normalize();
+ const x=normal.clone().addScaledVector(y,-normal.dot(y)).normalize(),z=x.clone().cross(y).normalize();
+ const world=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(x,y,z)).multiply(legFrames[b.name.replace(/^mixamorig[:_]?/,'')].clone().invert());
+ b.quaternion.copy(b.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));
+}
 function chain(upperName,lowerName,endName,target,pole){
  const upper=freddyBones[upperName],lower=freddyBones[lowerName],end=freddyBones[endName];
  if(!upper||!lower||!end)return;
@@ -471,10 +487,18 @@ function chain(upperName,lowerName,endName,target,pole){
  const height=Math.sqrt(Math.max(0,l1*l1-along*along));
  const elbow=a.clone().addScaledVector(direction,along).addScaledVector(elbowDirection,height);
  const reachable=a.clone().addScaledVector(direction,distance);
- pointBone(upper,lower,elbow);pointBone(lower,end,reachable);
+ if(legFrames[upperName]){const normal=direction.clone().cross(elbowDirection).normalize();pointLegInPlane(upper,lower,elbow,normal);pointLegInPlane(lower,end,reachable,normal);}
+ else{pointBone(upper,lower,elbow);pointBone(lower,end,reachable);}
 }
-function hand(side,target){chain(side+'Arm',side+'ForeArm',side+'Hand',targetFrame(target),targetFrame([side==='Left'?-.85:.85,1.35,.40]));}
+function hand(side,target,pole){chain(side+'Arm',side+'ForeArm',side+'Hand',targetFrame(target),targetFrame(pole||[side==='Left'?-.85:.85,1.35,.40]));}
 function foot(side,target,pole){chain(side+'UpLeg',side+'Leg',side+'Foot',targetFrame(target),targetFrame(pole||[side==='Left'?-.25:.25,.65,1]));}
+const ankleWorld={};freddy.updateWorldMatrix(true,true);
+for(const side of ['Left','Right'])ankleWorld[side]=fighter.root.getWorldQuaternion(new T.Quaternion()).invert().multiply(freddyBones[side+'Foot'].getWorldQuaternion(new T.Quaternion()));
+function ankle(side,yaw=0,pitch=0){
+ freddy.updateWorldMatrix(true,true);const b=freddyBones[side+'Foot'];
+ const q=fighter.root.getWorldQuaternion(new T.Quaternion()).multiply(new T.Quaternion().setFromAxisAngle(axisY,yaw*-poseFrameX)).multiply(new T.Quaternion().setFromAxisAngle(axisX,pitch)).multiply(ankleWorld[side]);
+ b.quaternion.copy(b.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(q));
+}
 function mixPoint(a,b,t){return a.map((v,i)=>lerp(v,b[i],t));}
 function poseKeys(t,keys){
  for(let i=1;i<keys.length;i++)if(t<=keys[i][0]){
@@ -489,7 +513,7 @@ function closeFist(side,strength=1){
  }
 }
 function animateFreddy(dt,moving,sprinting,block,magnitude=1){
- const locomotion=moving&&grounded&&dashT<=0&&jumpWindup<=0&&landingT<=0&&playerStun<=0&&playerKOClock<=0;
+ const locomotion=moving&&grounded&&attack?.kind!=='kick'&&dashT<=0&&jumpWindup<=0&&landingT<=0&&playerStun<=0&&playerKOClock<=0;
  if(walkAction){
   if(locomotion){if(!walkAction.isRunning())walkAction.reset().play();walkAction.timeScale=(block?.45:attack?.kind==='blast'?.38:attack?.45:sprinting?1.45:.85)*Math.max(.18,magnitude);}
   else walkAction.stop();
@@ -529,35 +553,38 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  if(attack){
   const cfg=attackConfig(attack),t=attack.t;
   if(attack.kind==='punch'){
-   const side=attack.stage===0?'Left':'Right',other=side==='Left'?'Right':'Left',sign=side==='Left'?-1:1;
-   const windAt=cfg.hitAt*.52,recoilAt=cfg.hitAt+.065;
-   const drive=poseKeys(t,[[0,[0]],[windAt,[-.24]],[cfg.hitAt,[1]],[recoilAt,[.8]],[cfg.duration,[0]]])[0];
-   const twist=(attack.stage===2?-.72:sign*.46)*drive;
-   freddy.position.z+=.16*drive;freddy.position.y-=.065*Math.abs(drive);
-   bend('Hips',axisY,twist*.55);bend('Spine',axisY,twist*.65);bend('Spine1',axisY,twist*.28);
-   bend('Spine',axisX,.15*drive);bend('Spine2',axisZ,-sign*.10*drive);bend('Head',axisY,-twist*.35);
-   const guard=[sign*.31,1.91,.40],wind=[sign*(attack.stage===2?.64:.48),1.81,attack.stage===2?.18:-.04];
-   const strike=attack.stage===2?[-sign*.14,1.96,.88]:[sign*.19,1.89,1.02];
-   const follow=attack.stage===2?[-sign*.38,1.86,.69]:[sign*.22,1.89,.88];
-   hand(side,poseKeys(t,[[0,guard],[windAt,wind],[cfg.hitAt,strike],[recoilAt,follow],[cfg.duration,guard]]));
-   hand(other,[-sign*.29,1.98,.38]);closeFist(side);closeFist(other);
-   if(grounded)stanceFeet();
+   const side=attack.stage===1?'Right':'Left',other=side==='Left'?'Right':'Left',sign=side==='Left'?-1:1;
+   const hook=attack.stage===2,windAt=cfg.hitAt*.40;
+   const drive=poseKeys(t,[[0,[0]],[windAt,[-.12]],[cfg.hitAt,[1]],[cfg.hitAt+.045,[.86]],[cfg.duration,[0]]])[0];
+   const twist=sign*(hook?.50:attack.stage===1?.40:.20)*drive;
+   freddy.position.z+=(attack.stage===1?.10:.055)*drive;freddy.position.y-=.035*Math.abs(drive);
+   bend('Hips',axisY,twist*.45);bend('Spine',axisY,twist*.55);bend('Spine1',axisY,twist*.20);
+   bend('Spine',axisX,.09*drive);bend('Head',axisY,-twist*.35);
+   const guard=[sign*.29,1.96,.34],load=[sign*(hook?.53:.31),1.94,hook?.33:.27];
+   const strike=hook?[-sign*.10,1.94,.65]:[sign*.19,1.93,attack.stage===1?.88:.81];
+   const follow=hook?[-sign*.21,1.93,.57]:[sign*.20,1.93,.74];
+   hand(side,poseKeys(t,[[0,guard],[windAt,load],[cfg.hitAt,strike],[cfg.hitAt+.045,follow],[cfg.duration,guard]]),hook?[sign*.70,1.91,.22]:[sign*.72,1.48,.30]);
+   hand(other,[-sign*.28,1.99,.34]);closeFist(side);closeFist(other);
+   if(grounded){stanceFeet();ankle('Left',hook?-.22*drive:0);ankle('Right',attack.stage===1?.28*drive:0);}
   }else if(attack.kind==='kick'){
    const side=attack.stage===1?'Left':'Right',sign=side==='Left'?-1:1,other=side==='Left'?'Right':'Left';
-   const windAt=cfg.hitAt*.62,recoilAt=cfg.hitAt+.08;
-   const drive=poseKeys(t,[[0,[0]],[windAt,[.38]],[cfg.hitAt,[1]],[recoilAt,[.82]],[cfg.duration,[0]]])[0];
-   const twist=(attack.stage===0?sign*.18:attack.stage===1?sign*.72:-.96)*drive;
-   freddy.position.x+=-sign*.11*drive*-poseFrameX;freddy.position.z+=.09*drive;
-   bend('Hips',axisY,twist);bend('Spine',axisY,-twist*.35);bend('Spine1',axisY,-twist*.16);
-   bend('Spine',axisX,-.28*drive);bend('Spine2',axisZ,sign*.23*drive);bend('Head',axisY,-twist*.25);
-   const rest=[sign*.23,.18,.02];
-   const chamber=attack.stage===2?[sign*.68,.93,.15]:[sign*.29,.98,.38];
-   const strike=attack.stage===0?[sign*.22,1.16,1.02]:attack.stage===1?[sign*.47,1.27,.95]:[-sign*.12,1.48,.88];
-   const follow=attack.stage===2?[-sign*.48,1.16,.65]:chamber;
-   foot(side,poseKeys(t,[[0,rest],[windAt,chamber],[cfg.hitAt,strike],[recoilAt,follow],[cfg.duration-.10,chamber],[cfg.duration,rest]]),[sign*.65,.88,.82]);
-   const support=stance[other];chain(other+'UpLeg',other+'Leg',other+'Foot',support,targetFrame([-sign*.28,.6,.65]));
-   bend(side+'Foot',axisX,(attack.stage===0?-.60:-.28)*drive);
-   hand(side,[sign*.55,1.57,.10]);hand(other,[-sign*.32,1.99,.40]);closeFist('Left');closeFist('Right');
+   const round=attack.stage===2,sideKick=attack.stage===1;
+   const chamberAt=cfg.hitAt*.65,retractAt=cfg.hitAt+.10,landAt=cfg.duration-.10;
+   const drive=poseKeys(t,[[0,[0]],[chamberAt,[.65]],[cfg.hitAt,[1]],[retractAt,[.70]],[landAt,[.38]],[cfg.duration,[0]]])[0];
+   const turn=sign*(round?.70:sideKick?.55:.12)*drive;
+   freddy.position.x+=-sign*.075*drive*-poseFrameX;freddy.position.y-=.04*drive;
+   bend('Hips',axisY,turn);bend('Spine',axisY,-turn*.35);bend('Spine1',axisZ,sign*.12*drive);
+   bend('Spine',axisX,-.13*drive);bend('Head',axisY,-turn*.35);
+   const rest=[sign*.23,.18,.02],chamber=round?[sign*.36,.74,.12]:[sign*.23,.71,.20];
+   const strike=round?[sign*.08,1.17,.89]:sideKick?[sign*.30,1.06,.88]:[sign*.22,.98,.91];
+   const arc=round?[sign*.55,1.01,.50]:chamber;
+   const target=poseKeys(t,[[0,rest],[chamberAt,chamber],[cfg.hitAt-.05,arc],[cfg.hitAt,strike],[retractAt,chamber],[landAt,chamber],[cfg.duration,rest]]);
+   const pole=poseKeys(t,[[0,[sign*.23,.70,.42]],[chamberAt,[sign*(round?.53:.25),1.17,.50]],[cfg.hitAt,[sign*(round?.42:sideKick?.46:.25),1.22,.63]],[retractAt,[sign*(round?.53:.25),1.17,.50]],[cfg.duration,[sign*.23,.70,.42]]]);
+   foot(side,target,pole);
+   foot(other,[-sign*.23,.18,-.10],[-sign*.24,.68,.35]);
+   ankle(other,sign*(round?1.05:sideKick?.75:.12)*drive);
+   ankle(side,turn,round?.22*drive:sideKick?0:-.20*drive);
+   hand(side,[sign*.40,1.79,.24]);hand(other,[-sign*.29,2.00,.35]);closeFist('Left');closeFist('Right');
   }else if(attack.kind==='blast'){
    const power=clamp((attack.chargeSeconds||0)/5,0,1),spread=.16+.36*power;
    const blastPoseT=attack.charging?Math.min(t,.18):.43+attack.throwT;
@@ -596,7 +623,7 @@ for(let i=0;i<4;i++){const streak=mesh(new T.BoxGeometry(.025,.025,.8),new T.Mes
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xc7b5ff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x8c52ff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.5.9 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.5.10 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,blastHeld:false,blastPointer:null,dashHeld:false,dashPointer:null,dashHoldTime:0,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
@@ -676,7 +703,7 @@ function reset(){
  pos.set(...stationSpawn());fighter.root.rotation.y=Math.PI;facing=Math.PI;freeCamYaw=Math.PI;freeCamPitch=.34;dashDirX=0;dashDirZ=-1;clearCamTouch();center.set(...stationTarget());dummy.root.rotation.y=0;
  hp=100;energy=100;dummyHP=100;dummyRespawn=0;dummy.root.visible=true;dummyFlash=0;combo=0;comboClock=0;
  vy=0;grounded=true;jumpWindup=0;landingT=0;lastMeleeKind='';lastMeleeStage=-1;lastMeleeTime=-99;chargeOrb.visible=false;attack=null;attackCd=0;dashT=0;dashCd=0;playerStun=0;dummyStun=0;hitInvuln=0;dummySwing=0;dummyAttackCd=1.25;playerKOClock=0;queuedAttack=[];
- cancelCharge();stopRun();totalHits=0;bestCombo=0;damageDealt=0;dummyKOs=0;playerHits=0;clearStick();unblock();
+ cancelCharge();stopRun(true);totalHits=0;bestCombo=0;damageDealt=0;dummyKOs=0;playerHits=0;clearStick();unblock();
  input.jump=input.dash=input.punch=input.kick=input.blast=false;
  for(const t of practiceTargets){t.hp=50;t.flash=0;t.root.rotation.z=0;}
  $('levelName').textContent=activeLevel.name+' · '+activeLevel.stations[trainingStation].name;
@@ -775,7 +802,7 @@ stick.addEventListener('pointerdown',e=>{e.preventDefault();if(input.joystick.po
 stick.addEventListener('pointermove',e=>{if(input.joystick.pointer===e.pointerId){e.preventDefault();moveStick(e);}});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(ev,e=>{if(input.joystick.pointer===e.pointerId)clearStick();});
 for(const a of ['jump','punch','kick'])$(a).addEventListener('pointerdown',e=>{e.preventDefault();input[a]=true;});
-function stopRun(){input.dashHeld=false;input.dash=false;input.dashHoldTime=0;input.dashPointer=null;$('dash').classList.remove('held');}
+function stopRun(cancelDash=false){input.dashHeld=false;if(cancelDash)input.dash=false;input.dashHoldTime=0;input.dashPointer=null;$('dash').classList.remove('held');}
 $('dash').addEventListener('pointerdown',e=>{e.preventDefault();if(input.dashPointer!==null)return;input.dashPointer=e.pointerId;input.dashHeld=true;input.dashHoldTime=0;input.dash=true;$('dash').setPointerCapture(e.pointerId);$('dash').classList.add('held');});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])$('dash').addEventListener(ev,e=>{if(input.dashPointer===e.pointerId)stopRun();});
 $('blast').addEventListener('pointerdown',e=>{
@@ -797,10 +824,10 @@ window.addEventListener('keydown',e=>{
  if(k==='i')$('dummyButton').click();if(k==='p')$('pauseButton').click();if(k==='m')$('modeButton').click();
 });
 window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();input.keys.delete(k);if(k==='f')stopRun();if(k==='l'){input.blastHeld=false;$('blast').classList.remove('held');}});
-window.addEventListener('blur',()=>{clearStick();clearCamTouch();input.keys.clear();unblock();cancelCharge();stopRun();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearStick();clearCamTouch();unblock();cancelCharge();stopRun();input.keys.clear();}});
+window.addEventListener('blur',()=>{clearStick();clearCamTouch();input.keys.clear();unblock();cancelCharge();stopRun(true);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearStick();clearCamTouch();unblock();cancelCharge();stopRun(true);input.keys.clear();}});
 function endFight(result){
- fightOver=true;clearStick();unblock();cancelCharge();stopRun();
+ fightOver=true;clearStick();unblock();cancelCharge();stopRun(true);
  const title=result==='win'?'YOU WIN!':result==='lose'?'YOU LOSE':'DRAW';
  $('resultTitle').textContent=title;
  $('resultDetail').textContent='Damage dealt: '+Math.round(damageDealt)+' · Best combo: '+bestCombo+' · Hits landed: '+totalHits;
@@ -818,7 +845,7 @@ function setGameMode(v){
  $('modeButton').classList.toggle('active',duel);
  updateTrainingModeUI();reset();say(duel?'1 VS 1 · FIGHT!':'FREE TRAINING');
 }
-function setPaused(v){if(fightOver)return;paused=v;if(!v)$('levelLayer').classList.remove('open');$('pauseLayer').classList.toggle('open',v);if(v){clearStick();clearCamTouch();unblock();cancelCharge();stopRun();input.keys.clear();}}
+function setPaused(v){if(fightOver)return;paused=v;if(!v)$('levelLayer').classList.remove('open');$('pauseLayer').classList.toggle('open',v);if(v){clearStick();clearCamTouch();unblock();cancelCharge();stopRun(true);input.keys.clear();}}
 $('levelButton').onclick=()=>{if(fightOver)return;setPaused(true);$('pauseLayer').classList.remove('open');$('levelLayer').classList.add('open');};
 $('closeLevelButton').onclick=()=>setPaused(false);
 for(const button of document.querySelectorAll('[data-station]'))button.onclick=()=>{trainingStation=button.dataset.station;setGameMode(false);setPaused(false);say(activeLevel.stations[trainingStation].name.toUpperCase());};
@@ -918,7 +945,7 @@ function frame(now){
  const speed=dashT>0?9.5:block?1.0:sprinting?3.4:1.9;
  let mx=wx,mz=wz;
  if(dashT>0){mx=dashDirX;mz=dashDirZ;dashT=Math.max(0,dashT-dt);}
- if(attack&&dashT<=0){mx*=.45;mz*=.45;}
+ if(attack&&dashT<=0){const mobility=attack.kind==='kick'?.12:.45;mx*=mobility;mz*=mobility;}
  if(playerStun>0||playerKOClock>0||jumpWindup>0){mx=0;mz=0;}
  moveEntity(pos,mx*speed*dt,mz*speed*dt);
  // In FREE mode movement turns Freddy; stopping or orbiting doesn't.
