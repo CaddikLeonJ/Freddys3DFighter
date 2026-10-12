@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.5.1</title>
+<title>Fredutsu Kaisen — Combat Lab v0.5.2</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -69,6 +69,10 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 #topButtons{flex-wrap:wrap;justify-content:flex-end;max-width:66vw}
 @media(max-height:390px){#topButtons{top:calc(env(safe-area-inset-top) + 65px)}.tool{font-size:9px;padding:5px 7px}#pauseLayer .panel{padding:10px}#pauseLayer h2{font-size:16px}#pauseLayer p{margin:4px 0 8px}}
 
+#levelLayer{display:none;position:fixed;inset:0;z-index:920;align-items:center;justify-content:center;background:#111a20dc;backdrop-filter:blur(8px);padding:16px}
+#levelLayer.open{display:flex}#levelLayer .panel{width:100%;max-width:480px;max-height:94vh;overflow:auto;background:#263530;border:1px solid #c4c3ac88;border-radius:18px;padding:22px;text-align:center}
+#levelLayer h2{margin:0 0 6px;color:#ede3c9;font-size:23px}#levelLayer p{font-size:12px;line-height:1.45;color:#d5dfd4}
+#levelLayer .buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}#levelLayer button{background:#576855;border:1px solid #c6ceb4;color:white;border-radius:9px;padding:12px;font-size:11px;font-weight:900}#levelLayer .hint{font-size:11px;color:#adbca7}
 @media(orientation:portrait){#portraitLock{display:flex}}
 </style>
 </head>
@@ -84,11 +88,11 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.1</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.2</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
-<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button><button class="tool" id="pauseButton">PAUSE</button></div>
+<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG ✓</button><button class="tool" id="levelButton">ACADEMY</button><button class="tool" id="pauseButton">PAUSE</button></div>
 <div id="combo"></div><div id="toast"></div><div id="damageFly"></div><div id="landscapeHint">Best in landscape ↻</div>
 <div id="bottom"><div id="stick"><div id="nub"></div></div><div id="actions">
   <button class="act" id="block">BLOCK</button><button class="act" id="blast">ENERGY</button><button class="act" id="jump">JUMP</button>
@@ -99,15 +103,21 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.1</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.2</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = move; push fully to sprint. PUNCH / KICK = melee combos. DASH = evade. BLOCK = hold to guard. ENERGY = cursed energy projectile. LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
 </div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.1</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="levelLayer" role="dialog" aria-label="Academy training areas"><div class="panel">
+<h2>FREDUTSU KAISEN</h2><p>Level 1 — Sorcerer’s Academy</p>
+<p>Explore the courtyard, gardens and raised hall terrace. Choose a practice area to begin.</p>
+<div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
+<p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
+</div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.2</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.1
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.2
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -144,9 +154,10 @@ const floorMat=mat(0x303047,.84),edgeMat=mat(0x13132a),pillarMat=mat(0x3b395c),i
 function mesh(g,m,x,y,z,parent=scene){const o=new T.Mesh(g,m);o.position.set(x,y,z);parent.add(o);return o;}
 // Level registry: scenery, boundaries, spawn points and walkable surfaces belong to a level.
 const levelRoot=new T.Group();levelRoot.name='Environment';scene.add(levelRoot);
-const colliders=[],cameraObstacles=[],surfaces=[];
+const colliders=[],cameraObstacles=[],surfaces=[],practiceTargets=[];
+let trainingStation='combat';
 let activeLevel=null;
-const LEVELS={academy:{id:'academy',name:'Sorcerer’s Academy',bounds:{minX:-28,maxX:28,minZ:-32,maxZ:32},spawn:[0,0,7],target:[0,0,-4.1],build:buildAcademy}};
+const LEVELS={academy:{id:'academy',name:'Sorcerer’s Academy',bounds:{minX:-28,maxX:28,minZ:-32,maxZ:32},spawn:[0,0,7],target:[0,0,-4.1],stations:{combat:{name:'Combat courtyard',spawn:[0,0,7],target:[0,0,-4.1]},energy:{name:'Energy range',spawn:[-8,0,3],target:[-8,0,-9]},movement:{name:'Movement & steps',spawn:[0,0,-12],target:[0,0,-4.1]}},build:buildAcademy}};
 function envMesh(g,m,x,y,z){return mesh(g,m,x,y,z,levelRoot);}
 function boxObstacle(x,z,w,d,h,material,y=0){
  const o=envMesh(new T.BoxGeometry(w,h,d),material,x,y+h/2,z);
@@ -156,7 +167,7 @@ function groundHeight(x,z){let y=0;for(const p of surfaces)if(x>=p.x-p.w/2&&x<=p
 function clearLevel(){
  const geometries=new Set(),materials=new Set();levelRoot.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
  levelRoot.clear();for(const g of geometries)g.dispose();for(const m of materials){if(m.map)m.map.dispose();m.dispose();}
- colliders.length=0;cameraObstacles.length=0;surfaces.length=0;
+ colliders.length=0;cameraObstacles.length=0;surfaces.length=0;practiceTargets.length=0;
 }
 function buildAcademy(){
  const earth=mat(0x78836a),stone=mat(0xaaa798),wood=mat(0x513b2c),plaster=mat(0xd5c7ab),roof=mat(0x3d4d59),red=mat(0x8e3b34),trim=mat(0x716553),leaf=mat(0x58735a),leafLight=mat(0x82946a),rock=mat(0x7b807b);
@@ -181,7 +192,7 @@ function buildAcademy(){
   boxObstacle(x,z,w,d,h,plaster,base);
   beam(wood,x,base+.20,z,w+.1,.18,d+.15);
   for(const side of [-1,1]){
-   const panel=beam(roof,x,base+h+.65,z+side*(d/4+.25),w+2,.22,d/2+1.2);panel.rotation.x=side*.30;
+   const panel=beam(roof,x,base+h+.65,z+side*(d/4+.25),w+2,.22,d/2+1.2);panel.rotation.x=side*.30;cameraObstacles.push(panel);
    beam(wood,x,base+h-.1,z+side*(d/2+.65),w+2,.18,.20);
    for(let px=-w/2;px<=w/2;px+=w/4)beam(wood,x+px,base+h/2,z+side*(d/2+.08),.20,h,.22);
   }
@@ -209,7 +220,7 @@ function buildAcademy(){
  beam(red,0,5.55,25,9,.45,.70);beam(roof,0,6.05,25,10,.30,1);beam(red,0,4.45,25,8,.30,.45);label('FREDUTSU KAISEN',0,5.25,25.41,5);
  function tree(x,z,h=6.5){
   const trunk=envMesh(new T.CylinderGeometry(.21,.36,h*.63,7),wood,x,h*.315,z);colliders.push({x,z,r:.46});cameraObstacles.push(trunk);
-  for(let i=0;i<5;i++){const angle=i*2.399,canopy=envMesh(new T.IcosahedronGeometry(1,1),i%2?leaf:leafLight,x+Math.cos(angle)*1.05,h*.72+(i%2)*.7,z+Math.sin(angle)*1.05);canopy.scale.set(1.7,1.3,1.7);}
+  for(let i=0;i<5;i++){const angle=i*2.399,canopy=envMesh(new T.IcosahedronGeometry(1,1),i%2?leaf:leafLight,x+Math.cos(angle)*1.05,h*.72+(i%2)*.7,z+Math.sin(angle)*1.05);canopy.scale.set(1.7,1.3,1.7);cameraObstacles.push(canopy);}
   const branch=beam(wood,x+.4,h*.5,z,.16,h*.35,.16);branch.rotation.z=-.5;
  }
  for(const [x,z,h] of [[-19,7,7],[19,7,7],[-23,21,8],[23,21,8],[-12,25,6.5],[12,25,6.5],[-15,-25,7],[15,-25,7]])tree(x,z,h);
@@ -226,7 +237,29 @@ function buildAcademy(){
  }
  // Pale paths link the gardens and side dojos to the main courtyard.
  for(const x of [-15,15])beam(stone,x,-.02,-7,5,.06,3.8);
- label('COMBAT COURTYARD',0,2.1,13.5,4);
+ // Shallow, walkable stairs lead to the main hall's raised terrace.
+ beam(stone,0,.40,-17.5,21,.80,3);
+ surfaces.push({x:0,z:-17.5,w:21,d:3,y:.8});
+ for(let i=0;i<4;i++){
+  const y=(i+1)*.2,z=-14.3-i*.55;
+  beam(stone,0,y/2,z,7.5,y,.56);surfaces.push({x:0,z,w:7.5,d:.56,y});
+ }
+ function sign(text,x,z){beam(wood,x-1.35,1,z,.12,2,.12);beam(wood,x+1.35,1,z,.12,2,.12);label(text,x,2.25,z+.06,3.2);}
+ sign('COMBAT COURTYARD',5.5,13);sign('ENERGY RANGE',-8,5.5);sign('MOVEMENT STEPS',6,-12.5);
+ // Paint the energy lane directly onto the pavers.
+ beam(mat(0x788c9d),-8,.045,-3,2,.012,14);
+ for(const z of [-8,-4,0])beam(trim,-8,.052,z,2,.012,.10);
+ function woodenTarget(x,z){
+  const root=new T.Group();root.position.set(x,0,z);levelRoot.add(root);
+  const targetMat=mat(0xa97a4b),baseMat=mat(0x554937);
+  mesh(new T.CylinderGeometry(.28,.34,2.05,10),targetMat,0,1.03,0,root);
+  mesh(new T.SphereGeometry(.31,10,8),targetMat,0,2.35,0,root);
+  mesh(new T.BoxGeometry(1.35,.15,.17),targetMat,0,1.72,0,root);
+  mesh(new T.CylinderGeometry(.50,.62,.15,12),baseMat,0,.075,0,root);
+  colliders.push({x,z,r:.55});practiceTargets.push({root,material:targetMat,x,z,hp:50,flash:0});
+ }
+ woodenTarget(7,3);woodenTarget(-4,3);
+
 }
 
 function loadLevel(id){
@@ -530,7 +563,7 @@ const projectileGeo=new T.SphereGeometry(.22,16,12),projectiles=[];
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xc7b5ff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x8c52ff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.5.1 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.5.2 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
@@ -579,9 +612,19 @@ function updateBars(){
  $('dummyHp').style.width=dummyHP+'%';$('dummyValue').textContent=Math.ceil(dummyHP);
  $('hitCount').textContent=totalHits;$('bestCombo').textContent=bestCombo;$('koCount').textContent=dummyKOs;$('totalDamage').textContent=Math.round(damageDealt);
 }
+function sceneryBlocked(x,y,z,padding=.0,height=2.4){
+ for(const c of colliders){
+  if(y>(c.top??Infinity)||y+height<(c.bottom??0))continue;
+  if(c.w){if(Math.abs(x-c.x)<c.w/2+padding&&Math.abs(z-c.z)<c.d/2+padding)return true;}
+  else if(Math.hypot(x-c.x,z-c.z)<padding+c.r)return true;
+ }
+ return false;
+}
 function movementAllowed(x,z,forDummy=false){
  const bounds=activeLevel.bounds;if(x<bounds.minX+radius||x>bounds.maxX-radius||z<bounds.minZ+radius||z>bounds.maxZ-radius)return false;
- for(const c of colliders){if(c.w){if(Math.abs(x-c.x)<c.w/2+radius&&Math.abs(z-c.z)<c.d/2+radius)return false;}else if(Math.hypot(x-c.x,z-c.z)<radius+c.r)return false;}
+ const entity=forDummy?center:pos;
+ if(groundHeight(x,z)>entity.y+.27)return false;
+ if(sceneryBlocked(x,entity.y,z,radius))return false;
  if(forDummy){if(Math.hypot(x-pos.x,z-pos.z)<1.12)return false;}
  else if(dummyRespawn<=0&&Math.hypot(x-center.x,z-center.z)<1.03)return false;
  return true;
@@ -589,14 +632,21 @@ function movementAllowed(x,z,forDummy=false){
 function moveEntity(o,x,z,forDummy=false){
  if(movementAllowed(o.x+x,o.z,forDummy))o.x+=x;
  if(movementAllowed(o.x,o.z+z,forDummy))o.z+=z;
+ const ground=groundHeight(o.x,o.z);
+ if(forDummy)o.y=ground;
+ else if(grounded){if(o.y-ground>.28){grounded=false;vy=0;}else o.y=ground;}
 }
+function stationSpawn(){return activeLevel.stations[trainingStation].spawn;}
+function stationTarget(){return activeLevel.stations[trainingStation].target;}
 function reset(){
  fightOver=false;fightSeconds=90;$('resultLayer').classList.remove('open');$('fightClock').textContent=duel?'DUEL · 90s':'FREE TRAINING';
- pos.set(...activeLevel.spawn);fighter.root.rotation.y=Math.PI;facing=Math.PI;freeCamYaw=Math.PI;freeCamPitch=.34;dashDirX=0;dashDirZ=-1;clearCamTouch();center.set(...activeLevel.target);dummy.root.rotation.y=0;
+ pos.set(...stationSpawn());fighter.root.rotation.y=Math.PI;facing=Math.PI;freeCamYaw=Math.PI;freeCamPitch=.34;dashDirX=0;dashDirZ=-1;clearCamTouch();center.set(...stationTarget());dummy.root.rotation.y=0;
  hp=100;energy=100;dummyHP=100;dummyRespawn=0;dummy.root.visible=true;dummyFlash=0;combo=0;comboClock=0;
  vy=0;grounded=true;jumpWindup=0;landingT=0;lastMeleeKind='';lastMeleeStage=-1;lastMeleeTime=-99;chargeOrb.visible=false;attack=null;attackCd=0;dashT=0;dashCd=0;playerStun=0;dummyStun=0;hitInvuln=0;dummySwing=0;dummyAttackCd=1.25;playerKOClock=0;queuedAttack=[];
  totalHits=0;bestCombo=0;damageDealt=0;dummyKOs=0;playerHits=0;clearStick();unblock();
  input.jump=input.dash=input.punch=input.kick=input.blast=false;
+ for(const t of practiceTargets){t.hp=50;t.flash=0;t.root.rotation.z=0;}
+ $('levelName').textContent=activeLevel.name+' · '+activeLevel.stations[trainingStation].name;
  for(const p of projectiles){scene.remove(p.m);p.m.material.dispose();}projectiles.length=0;
  for(const e of effects){scene.remove(e.m);e.m.geometry.dispose();e.m.material.dispose();}effects.length=0;
  $('combo').style.opacity='0';$('damageFly').style.opacity='0';updateBars();say('TRAINING RESET');
@@ -632,6 +682,13 @@ function hitEnemy(dmg,kind){
  if(!guarded){const dx=center.x-pos.x,dz=center.z-pos.z,d=Math.max(.001,Math.hypot(dx,dz));moveEntity(center,dx/d*.14,dz/d*.14,true);}
  if(dummyHP===0){dummyKOs++;if(duel)endFight('win');else{dummyRespawn=2.0;say('DUMMY DEFEATED · RESPAWNING');}}
  updateBars();
+}
+function hitPractice(target,damage,kind){
+ target.flash=.28;target.hp-=damage;totalHits++;damageDealt+=damage;
+ combo=comboClock>0?combo+1:1;comboClock=2.1;bestCombo=Math.max(bestCombo,combo);
+ popup('-'+damage);sound('hit');burst(target.x,1.7,target.z,0x8fe9da,.9);
+ $('combo').textContent=combo+' HITS · PRACTICE';$('combo').style.opacity='1';
+ if(target.hp<=0){dummyKOs++;target.hp=50;say('PRACTICE TARGET RESET');}updateBars();
 }
 function hitPlayer(dmg){
  if(playerKOClock>0||hitInvuln>0)return;
@@ -708,12 +765,16 @@ function updateTrainingModeUI(){
  $('dummyModeLabel').textContent=DUMMY_MODES[dummyMode]+(dummyMode===0?' · PASSIVE':dummyMode===1?' · BLOCKING':' · ATTACKING');
 }
 function setGameMode(v){
- duel=v;dummyMode=duel?2:0;
+ duel=v;if(duel)trainingStation='combat';dummyMode=duel?2:0;
  $('modeButton').textContent=duel?'MODE: DUEL':'MODE: TRAIN';
  $('modeButton').classList.toggle('active',duel);
  updateTrainingModeUI();reset();say(duel?'1 VS 1 · FIGHT!':'FREE TRAINING');
 }
-function setPaused(v){if(fightOver)return;paused=v;$('pauseLayer').classList.toggle('open',v);if(v){clearStick();clearCamTouch();unblock();input.keys.clear();}}
+function setPaused(v){if(fightOver)return;paused=v;if(!v)$('levelLayer').classList.remove('open');$('pauseLayer').classList.toggle('open',v);if(v){clearStick();clearCamTouch();unblock();input.keys.clear();}}
+$('levelButton').onclick=()=>{if(fightOver)return;setPaused(true);$('pauseLayer').classList.remove('open');$('levelLayer').classList.add('open');};
+$('closeLevelButton').onclick=()=>setPaused(false);
+for(const button of document.querySelectorAll('[data-station]'))button.onclick=()=>{trainingStation=button.dataset.station;setGameMode(false);setPaused(false);say(activeLevel.stations[trainingStation].name.toUpperCase());};
+$('reloadLevelButton').onclick=()=>{loadLevel(activeLevel.id);setGameMode(false);setPaused(false);};
 $('pauseButton').onclick=()=>setPaused(!paused);
 $('resumeButton').onclick=()=>setPaused(false);
 $('resetPauseButton').onclick=()=>{reset();setPaused(false);};
@@ -758,8 +819,8 @@ function frame(now){
  // Timers and meters
  energy=clamp(energy+dt*6.3,0,100);attackCd=Math.max(0,attackCd-dt);dashCd=Math.max(0,dashCd-dt);
  dummyStun=Math.max(0,dummyStun-dt);playerStun=Math.max(0,playerStun-dt);landingT=Math.max(0,landingT-dt);hitInvuln=Math.max(0,hitInvuln-dt);
- if(playerKOClock>0){playerKOClock-=dt;if(playerKOClock<=0){hp=100;pos.set(...activeLevel.spawn);playerStun=0;hitInvuln=.8;say('FIGHT AGAIN');}}
- if(dummyRespawn>0){dummyRespawn-=dt;dummy.root.visible=false;if(dummyRespawn<=0){dummyHP=100;center.set(...activeLevel.target);dummy.root.visible=true;say('DUMMY READY');}}
+ if(playerKOClock>0){playerKOClock-=dt;if(playerKOClock<=0){hp=100;pos.set(...stationSpawn());playerStun=0;hitInvuln=.8;say('FIGHT AGAIN');}}
+ if(dummyRespawn>0){dummyRespawn-=dt;dummy.root.visible=false;if(dummyRespawn<=0){dummyHP=100;center.set(...stationTarget());dummy.root.visible=true;say('DUMMY READY');}}
  dummyFlash=Math.max(0,dummyFlash-dt);
  if(toastClock>0){toastClock-=dt;if(toastClock<=0)$('toast').style.opacity='0';}
  if(comboClock>0){comboClock-=dt;if(comboClock<=0){combo=0;$('combo').style.opacity='0';}}
@@ -780,7 +841,7 @@ function frame(now){
  dummy.arms[0].rotation.x=-Math.sin((.35-dummySwing)/.35*Math.PI)*1.55*(dummySwing>0?1:0);
  dummy.torso.rotation.z=Math.sin(time*2.3)*.025+(dummyFlash>0?.14:0);
  dummy.torso.children[0].material=dummyFlash>0?fist:dummyM;
- targetMarker.position.set(center.x,.06,center.z);targetMarker.visible=lockedOn&&dummyRespawn<=0;
+ targetMarker.position.set(center.x,groundHeight(center.x,center.z)+.06,center.z);targetMarker.visible=lockedOn&&dummyRespawn<=0;
  targetMarker.rotation.z+=dt*.32;
  // Player directional movement; joystick full extension sprints, lock-on allows strafing.
  let x=input.joystick.x,z=input.joystick.y;
@@ -819,14 +880,15 @@ function frame(now){
  fighter.root.rotation.y=facing;
  if(input.jump&&grounded&&playerKOClock<=0&&jumpWindup<=0&&landingT<=0&&dashT<=0&&!attack){jumpWindup=.16;}input.jump=false;
  if(jumpWindup>0){jumpWindup=Math.max(0,jumpWindup-dt);if(jumpWindup<=0){vy=6.8;grounded=false;}}
- if(!grounded){vy-=19*dt;pos.y+=vy*dt;if(pos.y<=0){pos.y=0;vy=0;grounded=true;landingT=.18;}}
+ if(!grounded){vy-=19*dt;pos.y+=vy*dt;if(pos.y<=groundHeight(pos.x,pos.z)){pos.y=groundHeight(pos.x,pos.z);vy=0;grounded=true;landingT=.18;}}
  if(input.punch)startAttack('punch');input.punch=false;
  if(input.kick)startAttack('kick');input.kick=false;
  if(input.blast)launch();input.blast=false;
  if(attack){attack.t+=dt;const cfg=attackConfig(attack);
   if(cfg&&!attack.done&&attack.t>=cfg.hitAt){attack.done=true;
    const ax=center.x-pos.x,az=center.z-pos.z,d=Math.hypot(ax,az),front=(Math.sin(facing)*ax+Math.cos(facing)*az)/Math.max(d,.001);
-   if(d<=cfg.reach&&front>.25&&dummyRespawn<=0)hitEnemy(cfg.damage,attack.kind);
+   if(d<=cfg.reach&&front>.25&&dummyRespawn<=0&&Math.abs(pos.y-center.y)<1.7)hitEnemy(cfg.damage,attack.kind);
+   else if(!duel){const target=practiceTargets.filter(t=>Math.hypot(t.x-pos.x,t.z-pos.z)<=cfg.reach&&(Math.sin(facing)*(t.x-pos.x)+Math.cos(facing)*(t.z-pos.z))/Math.max(.001,Math.hypot(t.x-pos.x,t.z-pos.z))>.25).sort((a,b)=>Math.hypot(a.x-pos.x,a.z-pos.z)-Math.hypot(b.x-pos.x,b.z-pos.z))[0];if(target)hitPractice(target,cfg.damage,attack.kind);}
   }
   if(attack.t>=(cfg?cfg.duration:.95)){if(cfg)lastMeleeTime=time;attack=null;}
  }
@@ -835,7 +897,9 @@ function frame(now){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i];p.life-=dt;p.m.position.addScaledVector(p.dir,dt*16);p.m.rotation.x+=dt*8;p.m.rotation.y+=dt*8;
   const dx=p.m.position.x-center.x,dz=p.m.position.z-center.z;
-  if(dummyRespawn<=0&&Math.hypot(dx,dz)<1.02&&Math.abs(p.m.position.y-1.3)<1.1){hitEnemy(22,'blast');p.life=-1;}
+  if(dummyRespawn<=0&&Math.hypot(dx,dz)<1.02&&Math.abs(p.m.position.y-(center.y+1.3))<1.1){hitEnemy(22,'blast');p.life=-1;}
+  if(p.life>0&&!duel){const target=practiceTargets.find(t=>Math.hypot(p.m.position.x-t.x,p.m.position.z-t.z)<.70&&p.m.position.y>.4&&p.m.position.y<2.7);if(target){hitPractice(target,22,'blast');p.life=-1;}}
+  if(sceneryBlocked(p.m.position.x,p.m.position.y,p.m.position.z,.15,.30))p.life=-1;
   if(p.life<=0||p.m.position.x<activeLevel.bounds.minX||p.m.position.x>activeLevel.bounds.maxX||p.m.position.z<activeLevel.bounds.minZ||p.m.position.z>activeLevel.bounds.maxZ){scene.remove(p.m);p.m.material.dispose();projectiles.splice(i,1);}
  }
  for(let i=effects.length-1;i>=0;i--){
@@ -856,9 +920,9 @@ function frame(now){
  }
  fighter.torso.rotation.z=block?0:Math.sin(walkTime)*.035;
  animateFreddy(dt,moving,sprinting,block,magnitude);
- fighter.shadow.position.set(pos.x,.025,pos.z);fighter.shadow.material.opacity=.3/(1+pos.y*.45);
- dummy.shadow.position.set(center.x,.025,center.z);
- // Level props are static to keep the mobile frame budget predictable.
+ fighter.shadow.position.set(pos.x,groundHeight(pos.x,pos.z)+.04,pos.z);fighter.shadow.material.opacity=.3/(1+Math.max(0,pos.y-groundHeight(pos.x,pos.z))*.45);
+ dummy.shadow.position.set(center.x,groundHeight(center.x,center.z)+.04,center.z);
+ for(const target of practiceTargets){target.flash=Math.max(0,target.flash-dt);target.root.rotation.z=Math.sin(target.flash*35)*target.flash*.4;target.material.color.setHex(target.flash>0?0xffd39a:0xa97a4b);}
  // Third-person: LOCK frames both fighters, FREE orbits independently of facing.
  if(lockedOn&&dummyRespawn<=0){
   const bx=pos.x-center.x,bz=pos.z-center.z,dist=Math.max(.01,Math.hypot(bx,bz)),gap=clamp(7+dist*.48,9,14.5);
@@ -877,7 +941,7 @@ function frame(now){
  dirToCamera.copy(camGoal).sub(camLook);const rayLength=dirToCamera.length();
  if(rayLength>.1){cameraRaycaster.set(camLook,dirToCamera.normalize());cameraRaycaster.far=rayLength;
   const hits=cameraRaycaster.intersectObjects(cameraObstacles,false);
-  if(hits.length&&hits[0].distance<rayLength)camGoal.copy(camLook).addScaledVector(dirToCamera,Math.max(3.5,hits[0].distance-.35));
+  if(hits.length&&hits[0].distance<rayLength)camGoal.copy(camLook).addScaledVector(dirToCamera,Math.max(.75,hits[0].distance-.40));
  }
  camera.position.lerp(camGoal,1-Math.exp(-dt*5));camSmoothLook.lerp(camLook,1-Math.exp(-dt*7));camera.lookAt(camSmoothLook);
  renderer.render(scene,camera);
@@ -888,7 +952,7 @@ function frame(now){
   updateBars();
  }
 }
-updateTrainingModeUI();updateBars();msg.style.display='none';requestAnimationFrame(frame);
+reset();updateTrainingModeUI();updateBars();msg.style.display='none';requestAnimationFrame(frame);
 } catch(error){fail(error)} })();
 </script>
 </body>
