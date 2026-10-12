@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Freddy's 3D Anime Fighting Game — Combat Lab v0.4.2</title>
+<title>Fredutsu Kaisen — Combat Lab v0.5.0</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -84,7 +84,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">COMBAT LAB<small>FREDDY'S 3D FIGHTER · v0.4.2</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.0</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
@@ -99,15 +99,15 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>COMBAT LAB · PAUSED</h2><p>Third-person anime fighting prototype v0.4.2</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.0</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = move; push fully to sprint. PUNCH / KICK = melee combos. DASH = evade. BLOCK = hold to guard. ENERGY = cursed energy projectile. LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
 </div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Combat Lab v0.4.2</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.0</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.4.2
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.0
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -142,32 +142,38 @@ const mat=(c,rough=.82,metal=0)=>new T.MeshStandardMaterial({color:c,roughness:r
 const glow=(c,opacity=1)=>new T.MeshBasicMaterial({color:c,transparent:opacity<1,opacity,depthWrite:opacity===1});
 const floorMat=mat(0x303047,.84),edgeMat=mat(0x13132a),pillarMat=mat(0x3b395c),ink=mat(0x171829),skin=mat(0xffc9a8),hair=mat(0x182041),uniform=mat(0x3641a0),armor=mat(0x151a3c),fist=mat(0x5dc9dc,.54),dummyM=mat(0x936abf),dummyDark=mat(0x423d63);
 function mesh(g,m,x,y,z,parent=scene){const o=new T.Mesh(g,m);o.position.set(x,y,z);parent.add(o);return o;}
-const floor=mesh(new T.PlaneGeometry(36,36),floorMat,0,0,0);floor.rotation.x=-Math.PI/2;
-const grid=new T.GridHelper(36,36,0x615b90,0x454269);grid.position.y=.012;grid.material.transparent=true;grid.material.opacity=.42;scene.add(grid);
-const platform=mesh(new T.CylinderGeometry(10.7,10.95,.18,64),mat(0x35344e,.65),0,-.08,-.9);
-// Line rings and stylised arena markings avoid external textures.
-function ring(r,color,y=.025,x=0,z=-.9,opacity=.45){
- const o=new T.Mesh(new T.RingGeometry(r-.055,r+.055,84),new T.MeshBasicMaterial({color,transparent:true,opacity,side:T.DoubleSide,depthWrite:false}));o.rotation.x=-Math.PI/2;o.position.set(x,y,z);scene.add(o);return o;
+// Level registry: scenery, boundaries, spawn points and walkable surfaces belong to a level.
+const levelRoot=new T.Group();levelRoot.name='Environment';scene.add(levelRoot);
+const colliders=[],cameraObstacles=[],surfaces=[];
+let activeLevel=null;
+const LEVELS={academy:{id:'academy',name:'Sorcerer’s Academy',bounds:{minX:-28,maxX:28,minZ:-32,maxZ:32},spawn:[0,0,7],target:[0,0,-4.1],build:buildAcademy}};
+function envMesh(g,m,x,y,z){return mesh(g,m,x,y,z,levelRoot);}
+function boxObstacle(x,z,w,d,h,material,y=0){
+ const o=envMesh(new T.BoxGeometry(w,h,d),material,x,y+h/2,z);
+ colliders.push({x,z,w,d,bottom:y,top:y+h});cameraObstacles.push(o);return o;
 }
-ring(9.5,0x655eab,.025);ring(7.65,0x4d83b7,.025);ring(4.8,0x71519f,.025);
-for(let i=0;i<20;i++){
- const ang=i*Math.PI/10;
- const ln=mesh(new T.BoxGeometry(.12,.025,.78),glow(i%5===0?0x70e7e3:0x716baf,.7),Math.sin(ang)*9.1,.028,-.9+Math.cos(ang)*9.1);
- ln.rotation.y=ang;
+function groundHeight(x,z){let y=0;for(const p of surfaces)if(x>=p.x-p.w/2&&x<=p.x+p.w/2&&z>=p.z-p.d/2&&z<=p.z+p.d/2)y=Math.max(y,p.y);return y;}
+function clearLevel(){
+ const geometries=new Set(),materials=new Set();levelRoot.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
+ levelRoot.clear();for(const g of geometries)g.dispose();for(const m of materials){if(m.map)m.map.dispose();m.dispose();}
+ colliders.length=0;cameraObstacles.length=0;surfaces.length=0;
 }
-const colliders=[],cameraObstacles=[];
-function pillar(x,z){
- const base=mesh(new T.CylinderGeometry(.76,.88,.35,8),mat(0x24243d),x,.19,z);
- const p=mesh(new T.CylinderGeometry(.52,.61,3.2,8),pillarMat,x,1.92,z);p.rotation.y=Math.PI/8;cameraObstacles.push(p);
- mesh(new T.CylinderGeometry(.62,.62,.12,8),glow(0x3ebcc9,.85),x,3.55,z);
- const top=mesh(new T.OctahedronGeometry(.33,0),glow(0x74f7f1,.9),x,3.94,z);
- colliders.push({x,z,r:.8});return {top};
+function buildAcademy(){
+ const earth=mat(0x70846b),stone=mat(0xaaa798);
+ envMesh(new T.BoxGeometry(60,.30,70),earth,0,-.16,0);
+ envMesh(new T.BoxGeometry(25,.12,27),stone,0,-.045,0);
+ envMesh(new T.BoxGeometry(5,.08,22),stone,0,-.02,22);
+ for(let x=-12;x<=12;x+=2)for(let z=-12;z<=12;z+=2){const tile=envMesh(new T.BoxGeometry(1.96,.025,1.96),mat((x+z)%4?0xa8a79c:0xb9b6aa),x,.018,z);}
+ const rim=envMesh(new T.RingGeometry(4.8,4.86,64),new T.MeshBasicMaterial({color:0x525b68,side:T.DoubleSide}),0,.04,-4.1);rim.rotation.x=-Math.PI/2;
 }
-const pillars=[pillar(-9,-8),pillar(9,-8),pillar(-9,7),pillar(9,7)];
-for(let i=0;i<4;i++){
- const a=i*Math.PI/2+Math.PI/4;
- const o=mesh(new T.BoxGeometry(2.3,4,.8),edgeMat,Math.sin(a)*15,2,Math.cos(a)*15);o.rotation.y=a;
+function loadLevel(id){
+ if(!LEVELS[id])throw Error('Unknown level '+id);
+ clearLevel();activeLevel=LEVELS[id];activeLevel.build();
+ scene.background=new T.Color(0xb7c7d0);scene.fog=new T.FogExp2(0xb7c7d0,.010);
+ keyLight.color.setHex(0xffedcf);keyLight.intensity=2.1;keyLight.position.set(-16,24,12);renderer.toneMappingExposure=1.05;
+ rim.intensity=0;cyanLight.intensity=0;
 }
+loadLevel('academy');
 // Stylised character rig assembled from primitives. It is temporary, NOT a finished character.
 // Freddy's reference-sheet-inspired procedural 3D PLAYER.
 // This is a fully rotatable prototype made from actual 3D geometry.
@@ -461,7 +467,7 @@ const projectileGeo=new T.SphereGeometry(.22,16,12),projectiles=[];
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xc7b5ff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x8c52ff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.4.2 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.5.0 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
@@ -511,8 +517,8 @@ function updateBars(){
  $('hitCount').textContent=totalHits;$('bestCombo').textContent=bestCombo;$('koCount').textContent=dummyKOs;$('totalDamage').textContent=Math.round(damageDealt);
 }
 function movementAllowed(x,z,forDummy=false){
- if(Math.hypot(x,z+.9)>10.1)return false;
- for(const c of colliders)if(Math.hypot(x-c.x,z-c.z)<radius+c.r)return false;
+ const bounds=activeLevel.bounds;if(x<bounds.minX+radius||x>bounds.maxX-radius||z<bounds.minZ+radius||z>bounds.maxZ-radius)return false;
+ for(const c of colliders){if(c.w){if(Math.abs(x-c.x)<c.w/2+radius&&Math.abs(z-c.z)<c.d/2+radius)return false;}else if(Math.hypot(x-c.x,z-c.z)<radius+c.r)return false;}
  if(forDummy){if(Math.hypot(x-pos.x,z-pos.z)<1.12)return false;}
  else if(dummyRespawn<=0&&Math.hypot(x-center.x,z-center.z)<1.03)return false;
  return true;
@@ -523,7 +529,7 @@ function moveEntity(o,x,z,forDummy=false){
 }
 function reset(){
  fightOver=false;fightSeconds=90;$('resultLayer').classList.remove('open');$('fightClock').textContent=duel?'DUEL · 90s':'FREE TRAINING';
- pos.set(0,0,5.9);fighter.root.rotation.y=Math.PI;facing=Math.PI;freeCamYaw=Math.PI;freeCamPitch=.34;dashDirX=0;dashDirZ=-1;clearCamTouch();center.set(0,0,-4.1);dummy.root.rotation.y=0;
+ pos.set(...activeLevel.spawn);fighter.root.rotation.y=Math.PI;facing=Math.PI;freeCamYaw=Math.PI;freeCamPitch=.34;dashDirX=0;dashDirZ=-1;clearCamTouch();center.set(...activeLevel.target);dummy.root.rotation.y=0;
  hp=100;energy=100;dummyHP=100;dummyRespawn=0;dummy.root.visible=true;dummyFlash=0;combo=0;comboClock=0;
  vy=0;grounded=true;jumpWindup=0;landingT=0;lastMeleeKind='';lastMeleeStage=-1;lastMeleeTime=-99;chargeOrb.visible=false;attack=null;attackCd=0;dashT=0;dashCd=0;playerStun=0;dummyStun=0;hitInvuln=0;dummySwing=0;dummyAttackCd=1.25;playerKOClock=0;queuedAttack=[];
  totalHits=0;bestCombo=0;damageDealt=0;dummyKOs=0;playerHits=0;clearStick();unblock();
@@ -689,8 +695,8 @@ function frame(now){
  // Timers and meters
  energy=clamp(energy+dt*6.3,0,100);attackCd=Math.max(0,attackCd-dt);dashCd=Math.max(0,dashCd-dt);
  dummyStun=Math.max(0,dummyStun-dt);playerStun=Math.max(0,playerStun-dt);landingT=Math.max(0,landingT-dt);hitInvuln=Math.max(0,hitInvuln-dt);
- if(playerKOClock>0){playerKOClock-=dt;if(playerKOClock<=0){hp=100;pos.set(0,0,5.9);playerStun=0;hitInvuln=.8;say('FIGHT AGAIN');}}
- if(dummyRespawn>0){dummyRespawn-=dt;dummy.root.visible=false;if(dummyRespawn<=0){dummyHP=100;center.set(0,0,-4.1);dummy.root.visible=true;say('DUMMY READY');}}
+ if(playerKOClock>0){playerKOClock-=dt;if(playerKOClock<=0){hp=100;pos.set(...activeLevel.spawn);playerStun=0;hitInvuln=.8;say('FIGHT AGAIN');}}
+ if(dummyRespawn>0){dummyRespawn-=dt;dummy.root.visible=false;if(dummyRespawn<=0){dummyHP=100;center.set(...activeLevel.target);dummy.root.visible=true;say('DUMMY READY');}}
  dummyFlash=Math.max(0,dummyFlash-dt);
  if(toastClock>0){toastClock-=dt;if(toastClock<=0)$('toast').style.opacity='0';}
  if(comboClock>0){comboClock-=dt;if(comboClock<=0){combo=0;$('combo').style.opacity='0';}}
@@ -767,7 +773,7 @@ function frame(now){
   const p=projectiles[i];p.life-=dt;p.m.position.addScaledVector(p.dir,dt*16);p.m.rotation.x+=dt*8;p.m.rotation.y+=dt*8;
   const dx=p.m.position.x-center.x,dz=p.m.position.z-center.z;
   if(dummyRespawn<=0&&Math.hypot(dx,dz)<1.02&&Math.abs(p.m.position.y-1.3)<1.1){hitEnemy(22,'blast');p.life=-1;}
-  if(p.life<=0||Math.hypot(p.m.position.x,p.m.position.z+.9)>11){scene.remove(p.m);p.m.material.dispose();projectiles.splice(i,1);}
+  if(p.life<=0||p.m.position.x<activeLevel.bounds.minX||p.m.position.x>activeLevel.bounds.maxX||p.m.position.z<activeLevel.bounds.minZ||p.m.position.z>activeLevel.bounds.maxZ){scene.remove(p.m);p.m.material.dispose();projectiles.splice(i,1);}
  }
  for(let i=effects.length-1;i>=0;i--){
   const e=effects[i];e.life-=dt;const t=clamp(1-e.life/e.max,0,1);e.m.scale.setScalar(1+t*(e.type==='ring'?4:2));e.m.material.opacity=(1-t)*.85;
@@ -789,7 +795,7 @@ function frame(now){
  animateFreddy(dt,moving,sprinting,block,magnitude);
  fighter.shadow.position.set(pos.x,.025,pos.z);fighter.shadow.material.opacity=.3/(1+pos.y*.45);
  dummy.shadow.position.set(center.x,.025,center.z);
- for(const p of pillars)p.top.rotation.y+=dt*.3;
+ // Level props are static to keep the mobile frame budget predictable.
  // Third-person: LOCK frames both fighters, FREE orbits independently of facing.
  if(lockedOn&&dummyRespawn<=0){
   const bx=pos.x-center.x,bz=pos.z-center.z,dist=Math.max(.01,Math.hypot(bx,bz)),gap=clamp(7+dist*.48,9,14.5);
