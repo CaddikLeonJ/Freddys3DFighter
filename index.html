@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.5.15</title>
+<title>Fredutsu Kaisen — Combat Lab v0.5.16</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -88,7 +88,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.15</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.16</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
@@ -103,7 +103,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.15</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.16</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = move; push fully to sprint. PUNCH / KICK = melee combos. Camera: drag one finger to orbit; pinch inward to zoom out, spread to zoom in. DASH = tap to evade; hold to run, steer with joystick. BLOCK = hold to guard. ENERGY = hold to charge up to 5 seconds; release to throw (22–65 damage). LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
@@ -114,10 +114,10 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
 <p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
 </div></div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.15</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.16</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.15
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.16
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -443,6 +443,7 @@ function bend(name,axis,angle){
 const axisX=new T.Vector3(1,0,0),axisY=new T.Vector3(0,1,0),axisZ=new T.Vector3(0,0,1);
 const modelBaseY=freddy.position.y,modelBaseX=freddy.position.x,modelBaseZ=freddy.position.z;
 const previousBonePose=freddyRest.map(r=>r.q.clone());
+let runCycle=0;
 // Two-bone IK puts the actual fists and feet at authored action targets.
 function pointBone(b,child,target){
  freddy.updateWorldMatrix(true,true);
@@ -515,7 +516,7 @@ function closeFist(side,strength=1){
 function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  const locomotion=moving&&grounded&&attack?.kind!=='kick'&&dashT<=0&&jumpWindup<=0&&landingT<=0&&playerStun<=0&&playerKOClock<=0;
  if(walkAction){
-  if(locomotion){if(!walkAction.isRunning())walkAction.reset().play();walkAction.timeScale=(block?.45:attack?.kind==='blast'?.38:attack?.45:sprinting?1.65:.85)*Math.max(.18,magnitude);}
+  if(locomotion&&!sprinting){if(!walkAction.isRunning())walkAction.reset().play();walkAction.timeScale=(block?.45:attack?.kind==='blast'?.38:attack?.45:sprinting?1.65:.85)*Math.max(.18,magnitude);}
   else walkAction.stop();
  }
  for(const r of freddyRest){r.b.quaternion.copy(r.q);r.b.position.copy(r.p);r.b.scale.copy(r.s);}
@@ -527,20 +528,29 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  freddy.updateWorldMatrix(true,true);
  const stance={};for(const side of ['Left','Right'])stance[side]=fighter.root.worldToLocal(freddyBones[side+'Foot'].getWorldPosition(new T.Vector3())).toArray();
  const stanceFeet=()=>{for(const side of ['Left','Right']){const point=stance[side];chain(side+'UpLeg',side+'Leg',side+'Foot',point,targetFrame([side==='Left'?-.3:.3,.65,.9]));}};
- // Keep the imported gait's anatomical elbow and knee motion when running.
- if(locomotion&&sprinting){bend('Spine',axisX,.11);bend('Head',axisX,-.06);}
+ // Running uses the dash silhouette continuously, with ordinary movement and no dash FX.
+ if(locomotion&&sprinting){
+  runCycle+=dt*Math.PI*2*2.1*Math.max(.3,magnitude);
+  const drive=.5+.5*Math.sin(runCycle*2);
+  freddy.position.y-=.26+.05*drive;
+  bend('Hips',axisX,.18);bend('Spine',axisX,.48);bend('Spine1',axisX,.14);bend('Head',axisX,-.36);
+  for(const side of ['Left','Right']){const phase=runCycle+(side==='Right'?Math.PI:0),sign=side==='Left'?-1:1;
+   foot(side,[sign*.27,.18+.22*Math.max(0,Math.sin(phase)),.40*Math.cos(phase)],[sign*.28,.70,.80]);ankle(side);
+  }
+  hand('Left',[-.52,1.30,-.54]);hand('Right',[.52,1.36,-.51]);closeFist('Left');closeFist('Right');
+ }
  if(jumpWindup>0||landingT>0){
   const loading=jumpWindup>0;
   const crouch=loading?Math.sin((1-jumpWindup/.20)*Math.PI/2):Math.sin(landingT/.24*Math.PI);
   freddy.position.y-=.46*crouch;
   bend('Hips',axisX,.12*crouch);bend('Spine',axisX,.32*crouch);bend('Spine1',axisX,.10*crouch);bend('Head',axisX,-.20*crouch);
   foot('Left',[-.27,.17,.13]);foot('Right',[.27,.17,-.03]);
-  hand('Left',[-.48,1.38,-.36*crouch]);hand('Right',[.48,1.38,-.36*crouch]);
+  hand('Left',[-.38,1.46,.32],[-.60,1.15,.50]);hand('Right',[.38,1.46,.32],[.60,1.15,.50]);
  }else if(!grounded){
   const ascent=clamp(vy/8.2,0,1),fall=clamp(-vy/8.2,0,1),tuck=1-fall;
   bend('Hips',axisY,-.14*tuck);bend('Spine',axisX,.18*tuck);bend('Spine1',axisY,.17*tuck);bend('Head',axisX,-.10*tuck);
   foot('Left',[-.28,.20+.46*tuck,.12+.34*tuck]);foot('Right',[.26,.18+.20*tuck,-.24*tuck]);
-  hand('Left',[-.50,1.76+.39*ascent,.25]);hand('Right',[.45,1.75+.52*ascent,.39]);
+  hand('Left',[-.37,1.76+.24*ascent,.43],[-.65,1.45,.60]);hand('Right',[.37,1.76+.24*ascent,.43],[.65,1.45,.60]);
   closeFist('Left',.55);closeFist('Right',.55);
  }
  if(dashT>0){
@@ -631,7 +641,7 @@ for(let i=0;i<4;i++){const streak=mesh(new T.BoxGeometry(.025,.025,.8),new T.Mes
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xc7b5ff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x8c52ff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.5.15 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.5.16 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,blastHeld:false,blastPointer:null,dashHeld:false,dashPointer:null,dashHoldTime:0,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
@@ -951,7 +961,7 @@ function frame(now){
   else{dashDirX=Math.sin(facing);dashDirZ=Math.cos(facing);}
   burst(pos.x,.9,pos.z,0x65f6fa,.85);sound('swing');
  }input.dash=false;
- const speed=dashT>0?9.5:block?1.0:runHeld?4.3:sprinting?3.4:1.9;
+ const speed=dashT>0?9.5:block?1.0:sprinting?1.9*1.5:1.9;
  let mx=wx,mz=wz;
  if(dashT>0){mx=dashDirX;mz=dashDirZ;dashT=Math.max(0,dashT-dt);}
  if(attack&&dashT<=0){const mobility=attack.kind==='kick'?.12:.45;mx*=mobility;mz*=mobility;}
