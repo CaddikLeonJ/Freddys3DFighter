@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.5.23</title>
+<title>Fredutsu Kaisen — Combat Lab v0.5.24</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -88,7 +88,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.23</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.24</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug">FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
@@ -103,7 +103,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.23</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.24</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = walk. Tap DASH / RUN to toggle running. PUNCH / KICK = melee combos. Camera: drag one finger to orbit; pinch inward to zoom out, spread to zoom in. DASH / RUN = tap to run, tap again to stop; steer with joystick and use attacks freely. BLOCK = hold to guard. ENERGY = hold to charge up to 5 seconds; release to throw (22–65 damage). LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
@@ -114,10 +114,10 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 <div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
 <p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
 </div></div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.23</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.24</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.23
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.24
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -480,7 +480,7 @@ function chain(upperName,lowerName,endName,target,pole){
  const goal=fighter.root.localToWorld(new T.Vector3(...target));
  const poleWorld=fighter.root.localToWorld(new T.Vector3(...pole));
  const l1=a.distanceTo(b),l2=b.distanceTo(c);
- const direction=goal.clone().sub(a),distance=clamp(direction.length(),Math.abs(l1-l2)+.001,l1+l2-.001);direction.normalize();
+ const direction=goal.clone().sub(a),distance=clamp(direction.length(),Math.abs(l1-l2)+.001,l1+l2-(legFrames[upperName]?.00025:.001));direction.normalize();
  const relativePole=poleWorld.sub(a);
  const elbowDirection=relativePole.clone().addScaledVector(direction,-relativePole.dot(direction));
  if(elbowDirection.lengthSq()<.0001)elbowDirection.set(0,1,0).addScaledVector(direction,-direction.y);
@@ -511,9 +511,24 @@ function poseKeys(t,keys){
 }
 function closeFist(side,strength=1,closed=false){
  for(const digit of ['Index','Middle','Ring','Pinky'])for(const joint of [1,2,3]){
-  const bone=freddyBones[side+'Hand'+digit+joint];if(bone)bone.rotateX((side==='Left'?-1:1)*(closed?(joint===1?.48:joint===2?.46:.80):(joint===3?.32:.18))*strength);
+  const bone=freddyBones[side+'Hand'+digit+joint];if(bone)bone.rotateX((side==='Left'?-1:1)*(closed?(joint===1?.72:joint===2?.68:.80):(joint===3?.32:.18))*strength);
  }
  const thumb=freddyBones[side+'HandThumb2'];if(thumb&&closed)thumb.rotateX((side==='Left'?-1:1)*.25*strength);
+}
+// Monotone Hermite paths carry motion through arc keys without overshooting or snapping.
+function poseCurve(t,keys){
+ if(t<=keys[0][0])return keys[0][1].slice();
+ if(t>=keys.at(-1)[0])return keys.at(-1)[1].slice();
+ let k=1;while(t>keys[k][0])k++;
+ const a=keys[k-1],b=keys[k],span=b[0]-a[0],u=(t-a[0])/span;
+ return a[1].map((value,j)=>{
+  const tangent=i=>{if(i===0||i===keys.length-1)return 0;
+   const left=(keys[i][1][j]-keys[i-1][1][j])/(keys[i][0]-keys[i-1][0]);
+   const right=(keys[i+1][1][j]-keys[i][1][j])/(keys[i+1][0]-keys[i][0]);
+   return left*right<=0?0:2*left*right/(left+right);};
+  const out=(2*u*u*u-3*u*u+1)*value+(u*u*u-2*u*u+u)*span*tangent(k-1)+(-2*u*u*u+3*u*u)*b[1][j]+(u*u*u-u*u)*span*tangent(k);
+  return clamp(out,Math.min(value,b[1][j]),Math.max(value,b[1][j]));
+ });
 }
 function trailingArm(side){
  freddy.updateWorldMatrix(true,true);
@@ -586,19 +601,21 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
    const side=attack.stage===1?'Right':'Left',other=side==='Left'?'Right':'Left',sign=side==='Left'?-1:1;
    const hook=attack.stage===2,windAt=cfg.hitAt*.40;
    const drive=poseKeys(t,[[0,[0]],[windAt,[-.24]],[cfg.hitAt,[1]],[cfg.hitAt+.045,[.86]],[cfg.duration,[0]]])[0];
+   const hipDrive=poseCurve(t,[[0,[0]],[windAt,[-.22]],[cfg.hitAt*.83,[1]],[cfg.hitAt+.06,[.85]],[cfg.duration,[0]]])[0];
+   const kneeLoad=poseCurve(t,[[0,[0]],[windAt,[.13]],[cfg.hitAt,[.045]],[cfg.duration,[0]]])[0];
    const twist=sign*(hook?.66:attack.stage===1?.55:.32)*drive;
-   freddy.position.z+=(attack.stage===1?.17:.11)*drive;freddy.position.x+=sign*.065*drive*-poseFrameX;freddy.position.y-=.09*Math.abs(drive);
-   bend('Hips',axisY,twist*.55);bend('Hips',axisX,.06*drive);bend('Spine',axisY,twist*.55);bend('Spine1',axisY,twist*.20);bend(side+'Shoulder',axisY,sign*.10*drive);
+   freddy.position.z+=(attack.stage===1?.20:.13)*hipDrive;freddy.position.x+=sign*.075*hipDrive*-poseFrameX;freddy.position.y-=kneeLoad;
+   bend('Hips',axisY,sign*(hook?.66:attack.stage===1?.55:.32)*hipDrive*.55);bend('Hips',axisX,.06*hipDrive);bend('Spine',axisY,twist*.55);bend('Spine1',axisY,twist*.20);bend(side+'Shoulder',axisY,sign*.10*drive);
    bend('Spine',axisX,.14*drive);bend('Spine1',axisZ,-sign*.08*drive);bend('Head',axisY,-twist*.35);
    const guard=[sign*.29,1.96,.34],load=[sign*(hook?.53:.31),1.94,hook?.33:.27];
    const strike=hook?[-sign*.10,1.94,.65]:[sign*.19,1.93,attack.stage===1?.88:.81];
    const follow=hook?[-sign*.21,1.93,.57]:[sign*.20,1.93,.74];
-   hand(side,poseKeys(t,[[0,guard],[windAt,load],[cfg.hitAt,strike],[cfg.hitAt+.045,follow],[cfg.duration,guard]]),hook?[sign*.70,1.91,.22]:[sign*.72,1.48,.30]);
-   hand(other,[-sign*.28,1.99,.34]);closeFist(side);closeFist(other);
+   hand(side,poseCurve(t,[[0,guard],[windAt,load],[cfg.hitAt,strike],[cfg.hitAt+.045,follow],[cfg.duration,guard]]),hook?[sign*.70,1.91,.22]:[sign*.72,1.48,.30]);
+   hand(other,[-sign*.28,1.99,.34]);closeFist(side,1,true);closeFist(other,1,true);
    if(grounded){
-    for(const legSide of ['Left','Right']){const step=stance[legSide].slice();step[2]+=(legSide==='Left'?.13:-.055)*drive;if(legSide==='Right')step[1]+=.025*Math.max(0,drive);
+    for(const legSide of ['Left','Right']){const step=stance[legSide].slice();step[2]+=(legSide==='Left'?.18:-.065)*hipDrive;if(legSide==='Right')step[1]+=.04*Math.max(0,hipDrive);
      chain(legSide+'UpLeg',legSide+'Leg',legSide+'Foot',step,targetFrame([legSide==='Left'?-.28:.28,.70,.65]));}
-    ankle('Left',hook?-.34*drive:0);ankle('Right',attack.stage===1?.40*drive:0);
+    ankle('Left',hook?-.34*hipDrive:0);ankle('Right',attack.stage===1?.40*hipDrive:0);
    }
   }else if(attack.kind==='kick'){
    const spinning=attack.stage===2,high=attack.stage>0;
@@ -619,8 +636,8 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
    const rest=[sign*.23,.18,.02],chamber=[sign*.30,high?.78:.59,.16];
    const strike=[sign*.09,high?(spinning?1.53:1.47):.58,high?1.00:.97];
    const arc=[sign*.67,high?1.18:.65,.56];
-   const target=poseKeys(t,[[0,rest],[chamberAt,chamber],[cfg.hitAt-.07,arc],[cfg.hitAt,strike],[cfg.hitAt+.045,strike],[retractAt,chamber],[landAt,chamber],[cfg.duration,rest]]);
-   const pole=poseKeys(t,[[0,[sign*.24,.70,.42]],[chamberAt,[sign*.50,high?1.27:1.05,.48]],[cfg.hitAt,[sign*.23,high?1.31:.95,.70]],[retractAt,[sign*.50,high?1.27:1.05,.48]],[cfg.duration,[sign*.24,.70,.42]]]);
+   const target=poseCurve(t,[[0,rest],[chamberAt,chamber],[cfg.hitAt-.07,arc],[cfg.hitAt,strike],[cfg.hitAt+.045,strike],[retractAt,chamber],[landAt,chamber],[cfg.duration,rest]]);
+   const pole=poseCurve(t,[[0,[sign*.24,.70,.42]],[chamberAt,[sign*.50,high?1.27:1.05,.48]],[cfg.hitAt,[sign*.23,high?1.31:.95,.70]],[retractAt,[sign*.50,high?1.27:1.05,.48]],[cfg.duration,[sign*.24,.70,.42]]]);
    foot(side,target,pole);foot(other,[-sign*.23,.18,-.10],[-sign*.24,.68,.35]);
    ankle(other,spinning?0:sign*.95*drive);ankle(side,turn,.12*drive);
    hand(side,[sign*.46,1.70,.18],[sign*.75,1.37,.38]);hand(other,[-sign*.30,1.98,.35]);closeFist('Left');closeFist('Right');
@@ -662,7 +679,7 @@ for(let i=0;i<4;i++){const streak=mesh(new T.BoxGeometry(.025,.025,.8),new T.Mes
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xbdeeff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x168bff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.5.23 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.5.24 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,blastHeld:false,blastPointer:null,runEnabled:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
