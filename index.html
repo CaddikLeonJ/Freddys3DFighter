@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.5.26</title>
+<title>Fredutsu Kaisen — Combat Lab v0.5.27</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -75,19 +75,19 @@ button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;
 #levelLayer .buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}#levelLayer button{background:#576855;border:1px solid #c6ceb4;color:white;border-radius:9px;padding:12px;font-size:11px;font-weight:900}#levelLayer .hint{font-size:11px;color:#adbca7}
 @media(orientation:portrait){#portraitLock{display:flex}}
 /* Edge-docked controls leave the centre of the arena clear. */
-#hud{padding-top:calc(env(safe-area-inset-top) + 7px);background:none}
+#hud{padding-top:calc(env(safe-area-inset-top) + 2px);background:none}
 #hudRow{justify-content:space-between;gap:8px}
 .hudTeam{flex:0 1 23vw;max-width:205px}.hudName{font-size:9px;letter-spacing:.03em}.bar{height:8px}.cebar{height:5px}.hudLabel{font-size:7px}
-#centerTitle{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 44px);transform:translateX(-50%);width:42vw;margin:0;font-size:0;letter-spacing:0}
+#centerTitle{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 39px);transform:translateX(-50%);width:42vw;margin:0;font-size:0;letter-spacing:0}
 #centerTitle small:first-of-type{display:none}#centerTitle #levelName{font-size:8px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}#centerTitle #fightClock{font-size:8px;letter-spacing:.03em;margin-top:3px}
-#topButtons{top:calc(env(safe-area-inset-top) + 7px);left:50%;right:auto;transform:translateX(-50%);flex-wrap:nowrap;max-width:48vw;gap:4px}
+#topButtons{top:calc(env(safe-area-inset-top) + 2px);left:50%;right:auto;transform:translateX(-50%);flex-wrap:nowrap;max-width:48vw;gap:4px}
 #topButtons>.tool{font-size:9px;padding:8px 7px;min-height:32px;white-space:nowrap}
 #secondaryTools{display:none;position:absolute;top:39px;right:0;grid-template-columns:repeat(2,minmax(78px,1fr));gap:5px;padding:8px;border:1px solid #ffffff44;border-radius:12px;background:#10172ff0;box-shadow:0 6px 24px #0006}
 #secondaryTools.open{display:grid}#secondaryTools .tool{font-size:9px;padding:9px 7px}
 #bottom{padding-bottom:calc(env(safe-area-inset-bottom) + 7px)}#stick{width:100px;height:100px;opacity:.86}#stick:after{display:none}
 #actions{grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,48px);gap:5px}.act{width:54px;height:48px;border-radius:14px;font-size:9px;opacity:.9}
 #debug{top:auto;bottom:calc(env(safe-area-inset-bottom) + 117px);font-size:8px;background:#071023aa;padding:5px;border-radius:6px}
-#combo{top:auto;bottom:calc(env(safe-area-inset-bottom) + 14px);font-size:13px;transform:translateX(-50%)}#toast{top:calc(env(safe-area-inset-top) + 72px);font-size:9px;padding:5px 8px;max-width:70vw;overflow:hidden;text-overflow:ellipsis}
+#combo{top:auto;bottom:calc(env(safe-area-inset-bottom) + 14px);font-size:13px;transform:translateX(-50%)}#toast{top:calc(env(safe-area-inset-top) + 67px);font-size:9px;padding:5px 8px;max-width:70vw;overflow:hidden;text-overflow:ellipsis}
 #restoreUI{display:none;position:fixed;z-index:990;right:calc(env(safe-area-inset-right) + 8px);top:calc(env(safe-area-inset-top) + 8px);width:34px;height:28px;padding:0;border:1px solid #ffffff66;border-radius:8px;background:#10172f77;color:#fff;font-size:9px;font-weight:800}
 body.photo-mode #hud,body.photo-mode #topButtons,body.photo-mode #bottom,body.photo-mode #debug,body.photo-mode #combo,body.photo-mode #toast,body.photo-mode #damageFly,body.photo-mode #vignette{display:none!important}
 body.photo-mode #restoreUI{display:block}
@@ -106,7 +106,7 @@ body.photo-mode #restoreUI{display:block}
 <div id="vignette"></div>
 <div id="hud"><div id="hudRow">
   <div class="hudTeam"><div class="hudName">PLAYER · FREDDY</div><div class="bar"><span id="playerHp" class="hp" style="width:100%"></span></div><div class="hudLabel">CURSED ENERGY <b id="energyValue">100</b></div><div class="bar cebar"><span id="energyFill" class="ce" style="width:100%"></span></div></div>
-  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.26</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
+  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.5.27</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div>
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug" hidden>FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
@@ -122,7 +122,7 @@ body.photo-mode #restoreUI{display:block}
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.26</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.5.27</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = walk. Tap DASH / RUN to toggle running. PUNCH / KICK = melee combos. Camera: drag one finger to orbit; pinch inward to zoom out, spread to zoom in. DASH / RUN = tap to run, tap again to stop; steer with joystick and use attacks freely. BLOCK = hold to guard. ENERGY = hold to charge up to 5 seconds; release to throw (22–65 damage). LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
@@ -133,10 +133,10 @@ body.photo-mode #restoreUI{display:block}
 <div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
 <p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
 </div></div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.26</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.5.27</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.26
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.5.27
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -698,7 +698,7 @@ for(let i=0;i<4;i++){const streak=mesh(new T.BoxGeometry(.025,.025,.8),new T.Mes
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xbdeeff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x168bff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.5.26 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.5.27 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,blastHeld:false,blastPointer:null,runEnabled:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
