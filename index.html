@@ -459,7 +459,7 @@ try{
 }catch(error){console.warn('Authored clips unavailable; retaining previous animation fallback',error);}
 function authoredPose(name,t,skipLegs=false){
  const clip=authoredMotion.get(name);if(!clip)return false;
- for(const track of clip.tracks){if(!track.bone)continue;if(skipLegs&&/LeftUpLeg|RightUpLeg|LeftLeg|RightLeg|LeftFoot|RightFoot|Toe/.test(track.bone.name))continue;
+ for(const track of clip.tracks){if(!track.bone)continue;if(skipLegs&&/Hips|LeftUpLeg|RightUpLeg|LeftLeg|RightLeg|LeftFoot|RightFoot|Toe/.test(track.bone.name))continue;
   const value=track.sample.evaluate(clamp(t,0,clip.duration));track.bone[track.property].fromArray(value);if(track.property==='quaternion')track.bone.quaternion.normalize();
  }return true;
 }
@@ -600,10 +600,11 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  freddy.updateWorldMatrix(true,true);
  const stance={};for(const side of ['Left','Right'])stance[side]=fighter.root.worldToLocal(freddyBones[side+'Foot'].getWorldPosition(new T.Vector3())).toArray();
  const stanceFeet=()=>{for(const side of ['Left','Right']){const point=stance[side];chain(side+'UpLeg',side+'Leg',side+'Foot',point,targetFrame([side==='Left'?-.3:.3,.65,.9]));}};
- // Upright sprint silhouette, straight trailing arms, and a forward-recovery foot cycle.
+ // Keep the authored leg cycle and the same straight trailing arms as the dash.
  if(locomotion&&sprinting){
   if(authoredMotion.has('Sprint_Loop')){runCycle+=dt*1.55*Math.max(.3,magnitude);authoredPose('Sprint_Loop',runCycle%authoredMotion.get('Sprint_Loop').duration);}
   else{runCycle+=dt*Math.PI*2*4.3*Math.max(.3,magnitude);dashPose(.5-.5*Math.cos(runCycle));for(const side of ['Left','Right']){const sign=side==='Left'?-1:1,phase=runCycle+(side==='Right'?Math.PI:0);foot(side,[sign*.27,.18+.24*Math.max(0,Math.sin(phase)),-.66*Math.cos(phase)],[sign*.28,.72,.85]);ankle(side);}}
+  if(!attack&&!block){trailingArm('Left');trailingArm('Right');}
   if(attack){freddy.updateWorldMatrix(true,true);for(const side of ['Left','Right'])stance[side]=fighter.root.worldToLocal(freddyBones[side+'Foot'].getWorldPosition(new T.Vector3())).toArray();}
  }
  if(jumpWindup>0||landingT>0){
