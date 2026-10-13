@@ -631,6 +631,14 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  if(attack){
   const cfg=attackConfig(attack),t=attack.t;
   if(attack.kind==='punch'){
+   const clipName=['Punch_Jab','Punch_Cross','Melee_Hook'][attack.stage];
+   if(authoredMotion.has(clipName)){
+    const clip=authoredMotion.get(clipName),recovery=attack.stage===2?authoredMotion.get('Melee_Hook_Rec'):null;
+    const clipTime=clamp(t/cfg.duration,0,1)*(clip.duration+(recovery?.duration||0));
+    if(recovery&&clipTime>clip.duration)authoredPose('Melee_Hook_Rec',clipTime-clip.duration,moving&&grounded);
+    else authoredPose(clipName,Math.min(clipTime,clip.duration),moving&&grounded);
+    closeFist('Left',1,true);closeFist('Right',1,true);
+   }else{
    const side=attack.stage===1?'Right':'Left',other=side==='Left'?'Right':'Left',sign=side==='Left'?-1:1;
    const hook=attack.stage===2,windAt=cfg.hitAt*.40;
    const drive=poseKeys(t,[[0,[0]],[windAt,[-.24]],[cfg.hitAt,[1]],[cfg.hitAt+.045,[.86]],[cfg.duration,[0]]])[0];
@@ -649,6 +657,7 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
     for(const legSide of ['Left','Right']){const step=stance[legSide].slice();step[2]+=(legSide==='Left'?.18:-.065)*hipDrive;if(legSide==='Right')step[1]+=.04*Math.max(0,hipDrive);
      chain(legSide+'UpLeg',legSide+'Leg',legSide+'Foot',step,targetFrame([legSide==='Left'?-.28:.28,.70,.65]));}
     ankle('Left',hook?-.34*hipDrive:0);ankle('Right',attack.stage===1?.40*hipDrive:0);
+   }
    }
   }else if(attack.kind==='kick'){
    const spinning=attack.stage===2,high=attack.stage>0;
@@ -849,7 +858,7 @@ function hitPlayer(dmg){
  updateBars();
 }
 const meleeMoves={
- punch:[{duration:.40,hitAt:.16,damage:8,reach:2.45},{duration:.45,hitAt:.19,damage:10,reach:2.55},{duration:.53,hitAt:.25,damage:14,reach:2.55}],
+ punch:[{duration:.48,hitAt:.112,damage:8,reach:2.45},{duration:.56,hitAt:.289,damage:10,reach:2.55},{duration:.66,hitAt:.168,damage:14,reach:2.55}],
  kick:[{duration:.62,hitAt:.27,damage:12,reach:2.85},{duration:.74,hitAt:.34,damage:15,reach:2.95},{duration:.98,hitAt:.56,damage:19,reach:3.05}]
 };
 const attacks={punch:meleeMoves.punch[0],kick:meleeMoves.kick[0]};
