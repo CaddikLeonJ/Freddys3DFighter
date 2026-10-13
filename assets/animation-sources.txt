@@ -1,0 +1,9 @@
+Authored animation sources (CC0-1.0)
+Quaternius Universal Animation Library Standard: Sprint_Loop, Punch_Jab, Punch_Cross
+https://quaternius.itch.io/universal-animation-library
+Quaternius Universal Animation Library 2 Standard: Melee_Hook, Melee_Hook_Rec
+https://quaternius.itch.io/universal-animation-library-2
+Kay Lousberg / KayKit Character Animations Free 1.1: Melee_Unarmed_Attack_Kick
+https://kaylousberg.itch.io/kaykit-character-animations
+Clips retargeted to Freddy's existing skeleton, keeping joint lengths and removing horizontal root motion.
+CC0: https://creativecommons.org/publicdomain/zero/1.0/
