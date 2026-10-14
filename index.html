@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.6.3</title>
+<title>Fredutsu Kaisen — Combat Lab v0.6.4</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -110,7 +110,7 @@ body.photo-mode #restoreUI{display:block}
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug" hidden>FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
-<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="menuButton" aria-label="More game controls">MENU</button><button class="tool" id="photoButton">PHOTO</button><button class="tool" id="pauseButton">PAUSE</button><div id="secondaryTools"><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG</button><button class="tool" id="levelButton">ACADEMY</button>  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.6.3</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div><small id="buildStatus" style="grid-column:1/-1;text-align:center;font-size:9px;color:#b9cde2">BUILD v0.6.3</small></div></div>
+<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="menuButton" aria-label="More game controls">MENU</button><button class="tool" id="photoButton">PHOTO</button><button class="tool" id="pauseButton">PAUSE</button><div id="secondaryTools"><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG</button><button class="tool" id="levelButton">ACADEMY</button>  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.6.4</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div><small id="buildStatus" style="grid-column:1/-1;text-align:center;font-size:9px;color:#b9cde2">BUILD v0.6.4</small></div></div>
 <button id="restoreUI" aria-label="Exit photo mode and show controls" title="Show UI">UI</button>
 <div id="combo"></div><div id="toast"></div><div id="damageFly"></div><div id="landscapeHint">Best in landscape ↻</div>
 <div id="bottom"><div id="stick"><div id="nub"></div></div><div id="actions">
@@ -122,7 +122,7 @@ body.photo-mode #restoreUI{display:block}
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.6.3</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.6.4</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = walk. Tap DASH / RUN to toggle running. PUNCH / KICK = melee combos. Camera: drag one finger to orbit; pinch inward to zoom out, spread to zoom in. DASH / RUN = tap to run, tap again to stop; steer with joystick and use attacks freely. BLOCK = hold to guard. ENERGY = hold to charge up to 5 seconds; release to throw (22–65 damage). LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
@@ -133,10 +133,10 @@ body.photo-mode #restoreUI{display:block}
 <div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
 <p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
 </div></div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.6.3</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.6.4</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.6.3
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.6.4
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -732,7 +732,7 @@ for(let i=0;i<4;i++){const streak=mesh(new T.BoxGeometry(.025,.025,.8),new T.Mes
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xbdeeff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x168bff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.6.3 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.6.4 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,blastHeld:false,blastPointer:null,runEnabled:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
@@ -841,6 +841,7 @@ function beginRagdoll(dx=0,dz=0,fallSpeed=0){
  for(const node of particles){const parent=node.bone.parent.name.replace(/^mixamorig[:_]?/,'');if(nodes.has(parent))link(parent,node.name);}
  // A rigid torso cage preserves volume; limbs retain flexible joints and cannot stretch.
  for(const pair of [['LeftUpLeg','RightUpLeg'],['LeftShoulder','RightShoulder'],['LeftShoulder','Hips'],['RightShoulder','Hips'],['Spine2','LeftUpLeg'],['Spine2','RightUpLeg']])link(...pair);
+ const torsoLength=nodes.get('Hips').p.distanceTo(nodes.get('Head').p);link('Hips','Head',torsoLength*.78,torsoLength*1.03);
  for(const side of ['Left','Right'])for(const [a,b,c] of [[side+'Arm',side+'ForeArm',side+'Hand'],[side+'UpLeg',side+'Leg',side+'Foot']]){
   const length=nodes.get(a).p.distanceTo(nodes.get(b).p)+nodes.get(b).p.distanceTo(nodes.get(c).p);link(a,c,length*.18,length*.985);
  }
@@ -888,7 +889,13 @@ function stepRagdoll(dt){
     if(n.p.y<floor){n.p.y=floor;n.old.x=lerp(n.old.x,n.p.x,.16);n.old.z=lerp(n.old.z,n.p.z,.16);if(n.old.y>floor)n.old.y=floor;}
     const bounds=activeLevel.bounds;n.p.x=clamp(n.p.x,bounds.minX+n.r,bounds.maxX-n.r);n.p.z=clamp(n.p.z,bounds.minZ+n.r,bounds.maxZ-n.r);
    }
+   // Keep the head and extremities outside the torso instead of folding through it.
+   for(const n of rag.particles)if(/Head|Hand|Foot/.test(n.name))for(const name of ['Hips','Spine1']){
+    const b=rag.nodes.get(name),dx=n.p.x-b.p.x,dy=n.p.y-b.p.y,dz=n.p.z-b.p.z,d=Math.hypot(dx,dy,dz),limit=n.r+b.r;
+    if(d>1e-6&&d<limit){const scale=(limit-d)/(d*(n.invMass+b.invMass));n.p.x+=dx*scale*n.invMass;n.p.y+=dy*scale*n.invMass;n.p.z+=dz*scale*n.invMass;b.p.x-=dx*scale*b.invMass;b.p.y-=dy*scale*b.invMass;b.p.z-=dz*scale*b.invMass;}
+   }
   }
+  for(const n of rag.particles){for(const c of colliders)ragdollBox(n,c);n.p.y=Math.max(n.p.y,groundHeight(n.p.x,n.p.z)+n.r);}
  }
  const hips=rag.nodes.get('Hips').p;pos.x=hips.x;pos.z=hips.z;pos.y=groundHeight(pos.x,pos.z);
  if(rag.t>=2.6){
@@ -1270,6 +1277,7 @@ function frame(now){
   camLook.set(pos.x,pos.y+1.55,pos.z);
  }
  if(cameraMode===1){camGoal.y+=5.2;camGoal.x+=(camGoal.x-camLook.x)*.22;camGoal.z+=(camGoal.z-camLook.z)*.22;}
+ if(sceneryReaction&&!sceneryReaction.recovering)camLook.y=(sceneryReaction.nodes.get('Hips').p.y+sceneryReaction.nodes.get('Head').p.y)/2;
  // Pull the camera forward if a pillar would obstruct the character.
  dirToCamera.copy(camGoal).sub(camLook);const rayLength=dirToCamera.length();
  if(rayLength>.1){cameraRaycaster.set(camLook,dirToCamera.normalize());cameraRaycaster.far=rayLength;
