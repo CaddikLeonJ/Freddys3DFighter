@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#101025">
-<title>Fredutsu Kaisen — Combat Lab v0.6.2</title>
+<title>Fredutsu Kaisen — Combat Lab v0.6.3</title>
 <style>
 :root{--cyan:#66f4eb;--violet:#b18aff;--red:#ff5c84;--ink:#0a0e20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -110,7 +110,7 @@ body.photo-mode #restoreUI{display:block}
   <div class="hudTeam right"><div class="hudName">TRAINING DUMMY · <span id="dummyValue">100</span> HP</div><div class="bar"><span id="dummyHp" class="enemyhp" style="width:100%"></span></div><div class="hudLabel"><span id="dummyModeLabel">STILL · PASSIVE</span></div></div>
 </div></div>
 <div id="debug" hidden>FPS <span id="fps">--</span><br>POSITION <span id="position">0,0,0</span><br>STATE <span id="state">LOADING</span><br>HITS <span id="hitCount">0</span> · BEST COMBO <span id="bestCombo">0</span><br>KO <span id="koCount">0</span> · DAMAGE <span id="totalDamage">0</span></div>
-<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="menuButton" aria-label="More game controls">MENU</button><button class="tool" id="photoButton">PHOTO</button><button class="tool" id="pauseButton">PAUSE</button><div id="secondaryTools"><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG</button><button class="tool" id="levelButton">ACADEMY</button>  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.6.2</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div><small id="buildStatus" style="grid-column:1/-1;text-align:center;font-size:9px;color:#b9cde2">BUILD v0.6.2</small></div></div>
+<div id="topButtons"><button class="tool" id="lockButton">LOCK OFF</button><button class="tool" id="menuButton" aria-label="More game controls">MENU</button><button class="tool" id="photoButton">PHOTO</button><button class="tool" id="pauseButton">PAUSE</button><div id="secondaryTools"><button class="tool" id="cameraButton">CAMERA</button><button class="tool" id="dummyButton">AI: STILL</button><button class="tool" id="modeButton">MODE: TRAIN</button><button class="tool" id="resetButton">RESET</button><button class="tool" id="debugButton">DEBUG</button><button class="tool" id="levelButton">ACADEMY</button>  <div id="centerTitle">SORCERER’S ACADEMY<small>FREDUTSU KAISEN · v0.6.3</small><small id="levelName">Sorcerer’s Academy · Combat courtyard</small><small id="fightClock">FREE TRAINING</small></div><small id="buildStatus" style="grid-column:1/-1;text-align:center;font-size:9px;color:#b9cde2">BUILD v0.6.3</small></div></div>
 <button id="restoreUI" aria-label="Exit photo mode and show controls" title="Show UI">UI</button>
 <div id="combo"></div><div id="toast"></div><div id="damageFly"></div><div id="landscapeHint">Best in landscape ↻</div>
 <div id="bottom"><div id="stick"><div id="nub"></div></div><div id="actions">
@@ -122,7 +122,7 @@ body.photo-mode #restoreUI{display:block}
     <button id="rematchButton">REMATCH</button><button id="trainingButton">RETURN TO TRAINING</button>
 </div></div>
 <div id="pauseLayer" role="dialog" aria-label="Pause screen">
-  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.6.2</p>
+  <div class="panel"><h2>FREDUTSU KAISEN · PAUSED</h2><p>Third-person anime fighting prototype v0.6.3</p>
   <div class="buttons"><button id="resumeButton" class="primary">RESUME</button><button id="resetPauseButton">RESET</button><button id="sfxButton">SFX: ON</button></div>
   <div class="hint">Joystick = walk. Tap DASH / RUN to toggle running. PUNCH / KICK = melee combos. Camera: drag one finger to orbit; pinch inward to zoom out, spread to zoom in. DASH / RUN = tap to run, tap again to stop; steer with joystick and use attacks freely. BLOCK = hold to guard. ENERGY = hold to charge up to 5 seconds; release to throw (22–65 damage). LOCK = opponent camera. AI = still, guard or spar.</div>
   </div>
@@ -133,10 +133,10 @@ body.photo-mode #restoreUI{display:block}
 <div class="buttons"><button data-station="combat">COMBAT COURTYARD</button><button data-station="energy">ENERGY RANGE</button><button data-station="movement">MOVEMENT & STEPS</button><button id="reloadLevelButton">RELOAD LEVEL</button><button id="closeLevelButton">RETURN</button></div>
 <p class="hint">Combat: repeated presses chain three punches or kicks. Energy: charge and throw. Movement: jump, dash and climb the hall steps.</p>
 </div></div>
-<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.6.2</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
+<div id="message"><div class="inner"><h2>⚔️ Preparing Sorcerer’s Academy v0.6.3</h2><p>Loading the 3D engine. The first launch needs an internet connection.</p><div id="details">Starting Three.js…</div></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
 <script type="module">
-// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.6.2
+// FREDDY'S 3D ANIME FIGHTER — COMBAT LAB v0.6.3
 // Prototype placeholders. Jujutsu Kaisen-inspired combat; no franchise art is bundled.
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -755,7 +755,7 @@ for(let i=0;i<4;i++){const streak=mesh(new T.BoxGeometry(.025,.025,.8),new T.Mes
 const chargeOrb=new T.Group();scene.add(chargeOrb);chargeOrb.visible=false;
 mesh(projectileGeo,new T.MeshBasicMaterial({color:0xbdeeff}),0,0,0,chargeOrb);
 const chargeHalo=mesh(projectileGeo,new T.MeshBasicMaterial({color:0x168bff,transparent:true,opacity:.28,depthWrite:false}),0,0,0,chargeOrb);
-// COMBAT LAB v0.6.2 — movement, target camera, training AI, hit system, pause and stats.
+// COMBAT LAB v0.6.3 — movement, target camera, training AI, hit system, pause and stats.
 const input={keys:new Set(),joystick:{x:0,y:0,pointer:null},blockHeld:false,blastHeld:false,blastPointer:null,runEnabled:false,jump:false,dash:false,punch:false,kick:false,blast:false};
 const isDown=name=>input.keys.has(name),pos=fighter.root.position,center=dummy.root.position;
 const stick=$('stick'),nub=$('nub');
@@ -813,16 +813,20 @@ function sceneryContact(x,y,z,padding=.0,height=2.4){
  return null;
 }
 function sceneryBlocked(x,y,z,padding=.0,height=2.4){return !!sceneryContact(x,y,z,padding,height);}
+function risingStepContact(x,z,y){
+ for(const p of surfaces)if(p.y>y+.06&&Math.abs(x-p.x)<p.w/2+radius&&Math.abs(z-p.z)<p.d/2+radius)return {top:p.y,bottom:0,step:true};
+ return null;
+}
 function movementContact(x,z,entity=pos){
  const bounds=activeLevel.bounds;
  if(x<bounds.minX+radius||x>bounds.maxX-radius||z<bounds.minZ+radius||z>bounds.maxZ-radius)return {top:entity.y+3,bottom:entity.y,boundary:true};
- if(groundHeight(x,z)>entity.y+.06)return {top:groundHeight(x,z),bottom:0,step:true};
+ const step=risingStepContact(x,z,entity.y);if(step)return step;
  return sceneryContact(x,entity.y,z,radius);
 }
 function movementAllowed(x,z,forDummy=false){
  const bounds=activeLevel.bounds;if(x<bounds.minX+radius||x>bounds.maxX-radius||z<bounds.minZ+radius||z>bounds.maxZ-radius)return false;
  const entity=forDummy?center:pos;
- if(groundHeight(x,z)>entity.y+(forDummy?.27:.06))return false;
+ if(forDummy?groundHeight(x,z)>entity.y+.27:!!risingStepContact(x,z,entity.y))return false;
  if(sceneryBlocked(x,entity.y,z,radius))return false;
  if(forDummy){if(Math.hypot(x-pos.x,z-pos.z)<1.12)return false;}
  else if(dummyRespawn<=0&&Math.hypot(x-center.x,z-center.z)<1.03)return false;
