@@ -585,35 +585,6 @@ function dashPose(phase,burstMotion=false){
  foot('Right',[.27,.19+.26*drive,-.56*Math.cos(phase*Math.PI)]);
  if(!attack){trailingArm('Left');trailingArm('Right');}
 }
-function sceneryImpactPose(reaction,stance){
- const t=reaction.t,end=reaction.duration;
- // The contact and recovery are separate phases, with a held seated/stumble pose.
- const amount=poseCurve(t,[[0,[0]],[.12,[.22]],[.48,[1]],[end-.55,[1]],[end,[0]]])[0];
- if(reaction.kind==='wall'){
-  freddy.position.y-=.96*amount;
-  const shock=poseCurve(t,[[0,[0]],[.14,[1]],[.48,[0]],[end,[0]]])[0];
-  bend('Hips',axisX,-.18*amount);bend('Spine',axisX,-.48*shock+.12*amount);bend('Head',axisX,.20*shock);
-  for(const side of ['Left','Right']){
-   const sign=side==='Left'?-1:1;
-   foot(side,[sign*.30,.18,.02+.92*amount],[sign*.33,.68-.13*amount,.38+.44*amount]);ankle(side);
-   hand(side,[sign*(.38+.24*amount),1.55-1.11*amount,.25-.20*amount],[sign*.79,1.15-.76*amount,.34]);
-  }
- }else if(reaction.kind==='trip'){
-  freddy.position.y-=.80*amount;
-  bend('Hips',axisX,.28*amount);bend('Spine',axisX,.92*amount);bend('Spine1',axisX,.14*amount);bend('Head',axisX,-.36*amount);
-  foot('Left',[-.29,.18,.03+.26*amount],[-.31,.57,.58]);
-  foot('Right',[.29,.18+.16*amount,-.03-.25*amount],[.32,.58,.45]);ankle('Left');ankle('Right');
-  hand('Left',[-.46,1.55-1.28*amount,.25+.57*amount],[-.69,.84,.70]);
-  hand('Right',[.46,1.55-1.28*amount,.25+.57*amount],[.69,.84,.70]);
- }else{
-  freddy.position.y-=.16*amount;
-  bend('Hips',axisX,.12*amount);bend('Spine',axisX,.88*amount);bend('Spine1',axisX,.12*amount);bend('Head',axisX,-.32*amount);
-  const braceHeight=clamp(reaction.height+.12,.95,1.75);
-  hand('Left',[-.36,lerp(1.55,braceHeight,amount),.25+.42*amount]);
-  hand('Right',[.36,lerp(1.55,braceHeight,amount),.25+.42*amount]);
-  for(const side of ['Left','Right']){chain(side+'UpLeg',side+'Leg',side+'Foot',stance[side],targetFrame([side==='Left'?-.30:.30,.70,.55]));ankle(side);}
- }
-}
 function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  const locomotion=moving&&grounded&&!sceneryReaction&&attack?.kind!=='kick'&&dashT<=0&&jumpWindup<=0&&landingT<=0&&playerStun<=0&&playerKOClock<=0;
  if(walkAction){
@@ -622,6 +593,9 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  }
  for(const r of freddyRest){r.b.quaternion.copy(r.q);r.b.position.copy(r.p);r.b.scale.copy(r.s);}
  freddy.position.set(modelBaseX,modelBaseY,modelBaseZ);freddy.rotation.y=modelBaseYaw;actionYaw=0;actionShift.set(0,0,0);
+ if(sceneryReaction&&!sceneryReaction.recovering){
+  applyRagdollPose(sceneryReaction);freddyRest.forEach((r,i)=>previousBonePose[i].copy(r.b.quaternion));chargeOrb.visible=false;return;
+ }
  freddyMixer.update(dt);
  // The walk clip supplies hips/legs; actions replace only the upper body.
  if(block||attack){for(const r of freddyRest)if(!/^(Hips|LeftUpLeg|LeftLeg|LeftFoot|LeftToe|RightUpLeg|RightLeg|RightFoot|RightToe)/.test(r.b.name.replace(/^mixamorig[:_]?/,''))){r.b.quaternion.copy(r.q);r.b.position.copy(r.p);}}
@@ -728,7 +702,10 @@ function animateFreddy(dt,moving,sprinting,block,magnitude=1){
  }
  if(playerStun>0)bend('Spine',axisX,-.25);
  if(playerKOClock>0)bend('Spine',axisX,.65);
- if(sceneryReaction)sceneryImpactPose(sceneryReaction,stance);
+ if(sceneryReaction?.recovering){
+  const blend=clamp(sceneryReaction.recoveryT/.45,0,1),smooth=blend*blend*(3-2*blend);
+  freddyRest.forEach((r,i)=>{const saved=sceneryReaction.recoveryPose[i];r.b.position.lerpVectors(saved.p,r.b.position,smooth);r.b.quaternion.slerpQuaternions(saved.q,r.b.quaternion,smooth);});
+ }
  // Blend state changes instead of snapping between neutral and action poses.
  const blend=1-Math.exp(-dt*(attack||dashT>0?42:30));
  freddyRest.forEach((r,i)=>{previousBonePose[i].slerp(r.b.quaternion,blend);r.b.quaternion.copy(previousBonePose[i]);});
@@ -846,15 +823,88 @@ function moveEntity(o,x,z,forDummy=false){
  else if(grounded){if(o.y-ground>.28){grounded=false;vy=0;}else o.y=ground;}
  return {dx:o.x-beforeX,dz:o.z-beforeZ,contact};
 }
+const ragdollNames=['Hips','Spine','Spine1','Spine2','Neck','Head','LeftShoulder','LeftArm','LeftForeArm','LeftHand','RightShoulder','RightArm','RightForeArm','RightHand','LeftUpLeg','LeftLeg','LeftFoot','LeftToeBase','RightUpLeg','RightLeg','RightFoot','RightToeBase'];
+const ragdollStep=1/120;
+function beginRagdoll(dx=0,dz=0,fallSpeed=0){
+ if(sceneryReaction)return;
+ freddy.updateWorldMatrix(true,true);
+ const particles=[],nodes=new Map();
+ for(const name of ragdollNames){const bone=freddyBones[name];if(!bone)continue;
+  const p=bone.getWorldPosition(new T.Vector3()),heavy=/Hips|Spine/.test(name),r=name==='Head'?.18:/Hips|Spine/.test(name)?.20:/Foot/.test(name)?.16:/Toe/.test(name)?.10:.09;
+  // Carry momentum into the body; shoulders/head have slightly more angular momentum.
+  const height=clamp((p.y-pos.y)/2.6,0,1),velocity=new T.Vector3(dx*(.7+.25*height),-Math.min(7,Math.abs(fallSpeed))*.35,dz*(.7+.25*height));
+  velocity.add(new T.Vector3(Math.cos(facing),0,-Math.sin(facing)).multiplyScalar((name.startsWith('Left')?1:-1)*height*.28));
+  const node={name,bone,p,old:p.clone().addScaledVector(velocity,-ragdollStep),r,invMass:heavy?.25:1};particles.push(node);nodes.set(name,node);
+ }
+ const links=[];
+ function link(a,b,min,max){a=nodes.get(a);b=nodes.get(b);if(!a||!b)return;const length=a.p.distanceTo(b.p);links.push({a,b,min:min??length,max:max??length});}
+ for(const node of particles){const parent=node.bone.parent.name.replace(/^mixamorig[:_]?/,'');if(nodes.has(parent))link(parent,node.name);}
+ // A rigid torso cage preserves volume; limbs retain flexible joints and cannot stretch.
+ for(const pair of [['LeftUpLeg','RightUpLeg'],['LeftShoulder','RightShoulder'],['LeftShoulder','Hips'],['RightShoulder','Hips'],['Spine2','LeftUpLeg'],['Spine2','RightUpLeg']])link(...pair);
+ for(const side of ['Left','Right'])for(const [a,b,c] of [[side+'Arm',side+'ForeArm',side+'Hand'],[side+'UpLeg',side+'Leg',side+'Foot']]){
+  const length=nodes.get(a).p.distanceTo(nodes.get(b).p)+nodes.get(b).p.distanceTo(nodes.get(c).p);link(a,c,length*.18,length*.985);
+ }
+ sceneryReaction={kind:'ragdoll',t:0,accumulator:0,particles,nodes,links,origin:pos.clone(),recovering:false};
+ const length=Math.hypot(dx,dz);sceneryLatch={x:pos.x,z:pos.z,dx:length?dx/length:Math.sin(facing),dz:length?dz/length:Math.cos(facing)};
+ dashT=0;runDashPending=false;jumpWindup=landingT=0;vy=0;grounded=true;cancelCharge();attack=null;attackCd=0;queuedAttack=[];
+ input.jump=input.punch=input.kick=input.blast=false;chargeOrb.visible=false;
+ burst(pos.x,pos.y+.8,pos.z,0xffd09b,.55);sound('hit');say('RAGDOLL');
+}
 function beginSceneryReaction(contact,dx,dz){
- const length=Math.hypot(dx,dz);if(length<.001||sceneryReaction||sceneryLatch)return;
- const height=Math.max(0,(contact.top??3)-pos.y),kind=height<=.85?'trip':height<=1.85?'hunch':'wall';
- sceneryReaction={kind,t:0,duration:kind==='wall'?2.25:kind==='trip'?1.95:1.4,dx:dx/length,dz:dz/length,height};
- sceneryLatch={x:pos.x,z:pos.z,dx:dx/length,dz:dz/length};
- facing=Math.atan2(dx,dz);dashT=0;runDashPending=false;jumpWindup=landingT=0;cancelCharge();attack=null;attackCd=0;queuedAttack=[];
- input.jump=input.punch=input.kick=input.blast=false;
- burst(pos.x,pos.y+(kind==='trip'?.25:kind==='hunch'?1.15:1.8),pos.z,0xffd09b,.6);sound('hit');
- say(kind==='wall'?'WALL IMPACT':kind==='trip'?'TRIPPED':'WIND KNOCKED OUT');
+ if(sceneryReaction||sceneryLatch)return;const length=Math.hypot(dx,dz);if(length<.001)return;
+ beginRagdoll(dx/length*4.2,dz/length*4.2);
+}
+function ragdollBox(node,c){
+ const p=node.p,r=node.r,bottom=c.bottom??0,top=c.top??4;
+ if(p.y<bottom-r||p.y>top+r)return;
+ if(c.w){
+  const left=c.x-c.w/2-r,right=c.x+c.w/2+r,near=c.z-c.d/2-r,far=c.z+c.d/2+r;
+  if(p.x<=left||p.x>=right||p.z<=near||p.z>=far)return;
+  const distances=[p.x-left,right-p.x,p.z-near,far-p.z,top+r-p.y];
+  const face=distances.indexOf(Math.min(...distances));
+  if(face===0)p.x=left;else if(face===1)p.x=right;else if(face===2)p.z=near;else if(face===3)p.z=far;else p.y=top+r;
+ }else{
+  const dx=p.x-c.x,dz=p.z-c.z,d=Math.hypot(dx,dz),limit=c.r+r;
+  if(d>=limit)return;
+  if(top+r-p.y<limit-d)p.y=top+r;
+  else{p.x=c.x+(d>1e-5?dx/d:1)*limit;p.z=c.z+(d>1e-5?dz/d:0)*limit;}
+ }
+}
+function stepRagdoll(dt){
+ const rag=sceneryReaction;if(!rag)return;rag.t+=dt;
+ if(rag.recovering){rag.recoveryT+=dt;if(rag.recoveryT>=.45)sceneryReaction=null;return;}
+ rag.accumulator+=Math.min(dt,.05);
+ while(rag.accumulator>=ragdollStep){rag.accumulator-=ragdollStep;
+  for(const n of rag.particles){const x=n.p.x,y=n.p.y,z=n.p.z;n.p.x+=(x-n.old.x)*.994;n.p.y+=(y-n.old.y)*.994-19*ragdollStep*ragdollStep;n.p.z+=(z-n.old.z)*.994;n.old.set(x,y,z);}
+  for(let iteration=0;iteration<10;iteration++){
+   for(const link of rag.links){const a=link.a,b=link.b,dx=b.p.x-a.p.x,dy=b.p.y-a.p.y,dz=b.p.z-a.p.z,d=Math.hypot(dx,dy,dz);if(d<1e-6)continue;
+    const length=clamp(d,link.min,link.max),scale=(d-length)/(d*(a.invMass+b.invMass));
+    a.p.x+=dx*scale*a.invMass;a.p.y+=dy*scale*a.invMass;a.p.z+=dz*scale*a.invMass;b.p.x-=dx*scale*b.invMass;b.p.y-=dy*scale*b.invMass;b.p.z-=dz*scale*b.invMass;
+   }
+   for(const n of rag.particles){
+    for(const c of colliders)ragdollBox(n,c);
+    for(const s of surfaces)ragdollBox(n,{x:s.x,z:s.z,w:s.w,d:s.d,bottom:0,top:s.y});
+    const floor=groundHeight(n.p.x,n.p.z)+n.r;
+    if(n.p.y<floor){n.p.y=floor;n.old.x=lerp(n.old.x,n.p.x,.16);n.old.z=lerp(n.old.z,n.p.z,.16);if(n.old.y>floor)n.old.y=floor;}
+    const bounds=activeLevel.bounds;n.p.x=clamp(n.p.x,bounds.minX+n.r,bounds.maxX-n.r);n.p.z=clamp(n.p.z,bounds.minZ+n.r,bounds.maxZ-n.r);
+   }
+  }
+ }
+ const hips=rag.nodes.get('Hips').p;pos.x=hips.x;pos.z=hips.z;pos.y=groundHeight(pos.x,pos.z);
+ if(rag.t>=2.6){
+  const old=pos.clone();let safe=null;
+  for(const distance of [0,.7,1.2,1.8]){for(let i=0;i<12;i++){const angle=i*Math.PI/6,x=old.x+Math.cos(angle)*distance,z=old.z+Math.sin(angle)*distance;
+   pos.y=groundHeight(x,z);if(movementAllowed(x,z)){safe=new T.Vector3(x,pos.y,z);break;}}if(safe)break;}
+  pos.copy(safe||rag.origin);applyRagdollPose(rag);
+  rag.recoveryPose=freddyRest.map(r=>({p:r.b.position.clone(),q:r.b.quaternion.clone()}));rag.recovering=true;rag.recoveryT=0;
+ }
+}
+function applyRagdollPose(rag){
+ for(const n of rag.particles){
+  freddy.updateWorldMatrix(true,true);n.bone.position.copy(n.bone.parent.worldToLocal(n.p.clone()));
+  const child=rag.particles.find(c=>c.bone.parent===n.bone);if(child)pointBone(n.bone,child.bone,child.p);
+ }
+ freddy.updateWorldMatrix(true,true);
 }
 function stationSpawn(){return activeLevel.stations[trainingStation].spawn;}
 function stationTarget(){return activeLevel.stations[trainingStation].target;}
@@ -1120,11 +1170,7 @@ function frame(now){
  const fwdX=Math.sin(moveYaw),fwdZ=Math.cos(moveYaw);
  let wx=-fwdZ*x-fwdX*z,wz=fwdX*x-fwdZ*z;
  if(sceneryLatch&&!sceneryReaction&&(!directed||wx*sceneryLatch.dx+wz*sceneryLatch.dz<-.15||Math.hypot(pos.x-sceneryLatch.x,pos.z-sceneryLatch.z)>.9))sceneryLatch=null;
- if(sceneryReaction){
-  sceneryReaction.t+=dt;
-  if(sceneryReaction.t<.42){const push=sceneryReaction.kind==='wall'?1.7:sceneryReaction.kind==='trip'?.55:.2;moveEntity(pos,-sceneryReaction.dx*push*dt,-sceneryReaction.dz*push*dt);}
-  if(sceneryReaction.t>=sceneryReaction.duration)sceneryReaction=null;
- }
+ if(sceneryReaction)stepRagdoll(dt);
  if(!directed){wx=0;wz=0;dashT=0;}
  if(runDashPending&&sprinting&&!sceneryReaction&&!attack&&grounded&&jumpWindup<=0)input.dash=true;
  if(input.dash&&dashCd<=0&&!sceneryReaction&&!block&&playerKOClock<=0&&playerStun<=0&&energy>=5&&!attack&&grounded&&jumpWindup<=0){
@@ -1157,7 +1203,10 @@ function frame(now){
  fighter.root.rotation.y=facing;
  if(input.jump&&!sceneryReaction&&grounded&&playerKOClock<=0&&jumpWindup<=0&&landingT<=0&&dashT<=0&&!attack){jumpWindup=.20;}input.jump=false;
  if(jumpWindup>0){jumpWindup=Math.max(0,jumpWindup-dt);if(jumpWindup<=0){vy=8.2;grounded=false;burst(pos.x,pos.y+.15,pos.z,0xc5daf2,.65);}}
- if(!grounded){vy-=19*dt;pos.y+=vy*dt;if(pos.y<=groundHeight(pos.x,pos.z)){pos.y=groundHeight(pos.x,pos.z);vy=0;grounded=true;landingT=.24;burst(pos.x,pos.y+.10,pos.z,0xc5daf2,.85);}}
+ if(!grounded){vy-=19*dt;pos.y+=vy*dt;if(pos.y<=groundHeight(pos.x,pos.z)){const landingSpeed=-vy;pos.y=groundHeight(pos.x,pos.z);vy=0;grounded=true;
+  if(landingSpeed>2.4)beginRagdoll(wx*speed*.35,wz*speed*.35,landingSpeed);else landingT=.24;
+  burst(pos.x,pos.y+.10,pos.z,0xc5daf2,.85);
+ }}
  if(input.punch)startAttack('punch');input.punch=false;
  if(input.kick)startAttack('kick');input.kick=false;
  if(input.blast)launch();input.blast=false;
@@ -1234,7 +1283,7 @@ function frame(now){
   $('fps').textContent=fps;$('position').textContent=pos.x.toFixed(1)+', '+pos.y.toFixed(1)+', '+pos.z.toFixed(1);
   $('dash').textContent=runHeld?'RUN: ON':'DASH / RUN';
   $('blast').textContent=attack?.kind==='blast'&&attack.charging?((attack.chargeSeconds>=5?'MAX':attack.chargeSeconds.toFixed(1)+'s')+' · ENERGY'):'ENERGY';
-  $('state').textContent=playerKOClock>0?'KNOCKOUT':sceneryReaction?({wall:'WALL IMPACT',trip:'TRIPPED',hunch:'HUNCHED OVER'}[sceneryReaction.kind]):attack?attack.kind.toUpperCase():block?'BLOCK':dashT>0?'DASH':grounded?(moving?(sprinting?'SPRINT':'MOVING'):'IDLE'):'AIRBORNE';
+  $('state').textContent=playerKOClock>0?'KNOCKOUT':sceneryReaction?(sceneryReaction.recovering?'GETTING UP':'RAGDOLL'):attack?attack.kind.toUpperCase():block?'BLOCK':dashT>0?'DASH':grounded?(moving?(sprinting?'SPRINT':'MOVING'):'IDLE'):'AIRBORNE';
   updateBars();
  }
 }
